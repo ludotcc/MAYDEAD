@@ -106,7 +106,7 @@ function controller:Start()
 	local function updateTouchDismountVisibility()
 		touchDismount.Visible=UserInputService.TouchEnabled and controller.Mounted
 		touchSprint.Visible=UserInputService.TouchEnabled and controller.Mounted
-		if not touchSprint.Visible then controller.TouchSprint=false; touchSprintInput=nil end
+		if not touchSprint.Visible then controller.TouchSprint=false; touchSprintInput=nil; touchSprint.BackgroundColor3=Color3.fromRGB(19,38,46) end
 	end
 	openNaming=function()
 		nameInput.Text=controller.State and controller.State.CompanionName or "Guépard"
