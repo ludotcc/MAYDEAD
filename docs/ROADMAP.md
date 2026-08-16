@@ -1722,6 +1722,7 @@ Statut : `À TESTER STUDIO / ROBLOX PLAYER`.
 
 - [x] intégration code Boat et Factory aux crafts/placeables ;
 - [x] production serveur autoritaire et persistence du Naval Seaplane ;
+- [x] exclusion serveur des assemblages finaux concurrents entre plusieurs FinalFactory ;
 - [x] continuation après objectif et records monde ;
 - [ ] audit des assets et pilotage dans Roblox Studio ;
 - [ ] tests multijoueur, reload intermédiaire et Roblox Player production.

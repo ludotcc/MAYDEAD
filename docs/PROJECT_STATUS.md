@@ -2560,7 +2560,7 @@ Statut : `AUDIT TERMINÉ — PRODUCTION PROTÉGÉE`
 - Stations : transferts `SINGLE`, `FULL_STACK` et `HALF_STACK`, drag/clic long Campfire corrigé, `StationRequest` validé et limité côté serveur.
 - Pêche : payloads et fréquence de `FishingRequest` validés; chemin tactile et UI mobile validés.
 - Cheetah : `MountInput` valide le rider et les vecteurs finis, rejette NaN/infini, limite la fréquence et évite la réplication complète par input. `NOURRIR`, `DESCENDRE` et `SPRINT` tactiles sont validés sans changer les chemins PC.
-- Factory : `FinalFactoryRequest` limite ses actions, valide la machine et applique le cooldown Assemble.
+- Factory : `FinalFactoryRequest` limite ses actions, valide la machine et applique le cooldown Assemble. Une garde monde empêche également deux FinalFactory distinctes de consommer simultanément les composants du même objectif final.
 - Mobile/tablette : le chantier P1/P2 couvert par `INPUT_CONTROLS.md` est validé Studio par le Game Director; les contrôles encore marqués `À TESTER` n'étaient pas inclus dans cette validation.
 - Production logs : bruit diagnostic réduit, avertissements critiques conservés et `BalanceConfig.BALANCE_DEBUG = false`; aucun asset supprimé.
 - Temps : YearsOnIsland, cycle 13 + 4 minutes, persistance legacy et affichages ont été validés par le Game Director.
@@ -2599,3 +2599,14 @@ Statut : `CORRIGÉ STATIQUEMENT — TEST MULTISERVEUR RÉEL REQUIS`
 - `GetJoinedWorlds` ne supprime pas une réservation `Accepting` récente pendant cette transaction. Une réservation abandonnée redevient nettoyable après le timeout technique existant.
 - `PlayerRemoving` resynchronise également la table runtime transmise à `WorldService` après retrait du joueur, sans modifier l'ordre de capture ni le `task.defer` de l'inventaire.
 - DataStores, namespaces, schéma, champs YearsOnIsland legacy, limites officielles et système de session restent inchangés.
+
+## P1 BOAT / NAVAL SEAPLANE — AUDIT FINAL
+
+Statut : `VALIDÉ STATIQUEMENT — TEST STUDIO / ROBLOX PLAYER REQUIS`
+
+- Le Boat fabriqué suit le placement serveur Water-only et le snapshot générique des structures. Sa `StructureId`, son propriétaire de structure, son pivot courant et son enregistrement `BoatService` sont restaurés sans système de sauvegarde parallèle.
+- Le Boat utilise le `VehicleSeat` natif et le contrôleur physique serveur central. La hiérarchie réelle de l'asset, le network ownership Roblox, les contrôles PC/tactiles et le comportement à deux joueurs restent à confirmer avec les assets Studio réels.
+- La FinalFactory consomme côté serveur `MetalPanelStack x40` et `PlasticPanelStack x30`, persiste son stockage et sa progression, puis matérialise un unique `Naval Seaplane` et complète l'objectif monde côté serveur.
+- Une race P1 entre deux FinalFactory distinctes permettait auparavant deux consommations avant la completion mondiale. `_startFinalBuild` refuse désormais tout démarrage lorsqu'une autre FinalFactory enregistrée n'est plus `Idle`; la garde est évaluée avant la consommation et sans yield.
+- La position persistée du Naval Seaplane correspond au pivot de matérialisation initial. L'éventuelle pilotabilité de l'asset et la persistance d'une position déplacée ne peuvent pas être conclues sans inspection et test du DataModel Studio.
+- Aucun Remote, asset, DataStore, namespace, version de schéma, inventaire, membership, SessionLock ou format monde n'est modifié.

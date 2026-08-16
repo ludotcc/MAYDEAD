@@ -938,6 +938,11 @@ function FactoryService:_startFinalBuild(player, machine, data)
 	if self._worldService and not self._worldService:IsRuntimeMember(player) then return reject("NotWorldMember") end
 	if data.BuildState ~= "Idle" then return reject("ProductionNotIdle") end
 	if self._worldService and self._worldService:IsNavalSeaplaneCompleted() then return reject("AlreadyCompleted") end
+	for otherMachine, otherData in self._machines do
+		if otherMachine ~= machine and otherData.Type == "Factory" and otherData.BuildState ~= "Idle" then
+			return reject("AnotherFinalBuildActive")
+		end
+	end
 	local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
 	local interactionCFrame = data.InteractionPoint and getWorldCFrame(data.InteractionPoint)
 	local interactionPosition = interactionCFrame and interactionCFrame.Position or machine:GetPivot().Position
