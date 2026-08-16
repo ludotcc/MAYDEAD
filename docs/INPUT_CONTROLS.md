@@ -1,8 +1,8 @@
 # MAYDEAD — INPUT CONTROLS
 
-**Document :** Source de vérité des contrôles joueur  
-**Projet :** MAYDEAD  
-**Plateformes :** PC, tablette et téléphone  
+**Document :** Source de vérité des contrôles joueur
+**Projet :** MAYDEAD
+**Plateformes :** PC, tablette et téléphone
 **Statut :** Référence officielle
 
 ------------------------------------------------------------------------
@@ -223,4 +223,3 @@ interactive doit mettre à jour `docs/INPUT_CONTROLS.md` dans le même chantier.
 Une modification de ce document ne remplace pas les mises à jour nécessaires
 de `GAME_DESIGN.md`, `ARCHITECTURE.md` ou `PROJECT_STATUS.md` lorsque leur
 périmètre est également affecté.
-
