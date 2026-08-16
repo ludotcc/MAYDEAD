@@ -422,7 +422,7 @@ function StationService:CanDismantle(station)
 	end
 	if data.Type == "Smelt" then
 		return not hasItems(data.InputSlots) and not hasItems(data.FuelSlots) and not hasItems(data.OutputSlots)
-			and data.IsLit ~= true and (data.BurnRemaining or 0) <= 0
+			and data.IsLit ~= true
 	end
 	return not hasItems(data.FuelSlots)
 		and not hasItems(data.CookingSlots)
