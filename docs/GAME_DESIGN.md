@@ -475,9 +475,12 @@ Cette durée reste une valeur d'équilibrage.
 
 Le personnage possède une jauge de faim.
 
-Elle diminue progressivement.
+La référence d'équilibrage actuelle fait passer une jauge pleine de 100 à
+0 en environ **19 minutes** de présence active normale, soit environ 1,12
+cycle annuel MAYDEAD de 17 minutes.
 
-À zéro, le joueur commence progressivement à perdre des PV.
+À zéro, le joueur commence progressivement à perdre des PV. Depuis 100 PV,
+la famine seule entraîne la mort en environ **4 à 5 minutes**.
 
 La nourriture permet également de récupérer une partie de l'énergie.
 
@@ -487,10 +490,13 @@ La nourriture permet également de récupérer une partie de l'énergie.
 
 Le personnage possède une jauge de soif.
 
-Elle diminue progressivement et peut diminuer plus rapidement que la
-faim.
+La référence d'équilibrage actuelle fait passer une jauge pleine de 100 à
+0 en environ **15 minutes** de présence active normale, soit environ 0,88
+cycle annuel MAYDEAD de 17 minutes. Elle diminue donc plus rapidement que
+la faim.
 
-À zéro, le joueur commence progressivement à perdre des PV.
+À zéro, le joueur commence progressivement à perdre des PV. Depuis 100 PV,
+la déshydratation seule entraîne la mort en environ **3 à 4 minutes**.
 
 ------------------------------------------------------------------------
 
@@ -554,6 +560,14 @@ L'énergie peut être récupérée notamment par :
 
 -   nourriture ;
 -   sommeil.
+
+Son système actuel reste basé sur l'activité : drain faible au repos,
+drain lié au mouvement et coûts des actions existantes. Aucun
+multiplicateur nocturne artificiel n'est appliqué aux besoins de survie.
+
+La santé ne subit aucun drain passif en situation normale. Lorsque les
+conditions serveur de faim et de soif sont remplies, elle se régénère à la
+référence actuelle de **0,3 PV par seconde**.
 
 ------------------------------------------------------------------------
 
@@ -1671,7 +1685,7 @@ mécanique.
 
 ------------------------------------------------------------------------
 
-## ÉQUILIBRAGE V1 DE TEST — SURVIE DEPUIS ZÉRO
+## ÉQUILIBRAGE V2 — SURVIE DEPUIS ZÉRO
 
 - Départ : inventaire vide, 20 slots principaux + 8 slots rapides réels.
 - Tree : mains nues = récolte immédiate Wood x1 ; Axe 25 dégâts, Wood x8 ; respawn 60 s.
@@ -1680,8 +1694,9 @@ mécanique.
 - Crystal : 150 PV, Pickaxe 25, Crystal x3, respawn 180 s.
 - Tomato : Hunger +15, Energy +10 ; RawMeat : Hunger +20, Energy +10, Health -20 ; CookedMeat : Hunger +40, Energy +45.
 - Bison : 100 PV, Axe 25 / Pickaxe 20, RawMeat x6, respawn 300 s.
-- Drains par seconde : Hunger 0,035 ; Thirst 0,05 ; Energy 0,025.
-- Régénération : Health +1/s si Hunger > 25 et Thirst > 25.
+- Drains par seconde : Hunger 100 / 1140 (≈ 0,087719298) ; Thirst 100 / 900 (≈ 0,111111111).
+- Énergie : système actuel basé sur l'activité, avec 0,005/s immobile, 0,065/s en mouvement et les coûts d'actions existants inchangés.
+- Régénération : Health +0,3/s si Hunger > 25 et Thirst > 25 ; aucun drain passif normal.
 - Dégâts : famine 0,35/s ; déshydratation 0,5/s ; noyade inchangée.
 
 Statut : **À TESTER EN CONDITIONS RÉELLES** avant tout nouvel ajustement.

@@ -1509,7 +1509,7 @@ Statut : `À TESTER`
 - Polish stations / WildCrop `À TESTER` : inventaires station en cartes d’icônes avec drag unitaire et Shift+clic stack ; Chest runtime rendu interrogeable ; WildTomato serveur avec récompenses exclusives et respawn 480 secondes.
 - Polish inventaires V2 `À TESTER` : composant de slot/grille partagé pour joueur et stations, drag global après seuil de 6 pixels (une unité), Maj+clic pile complète, feedback des cibles et validation serveur des slots explicitement visés.
 - Polish inventaire V3 `À TESTER` : MainFrame station 920×560 adaptatif, 20 slots principaux + 8 vrais slots rapides, touches 1–8, déplacement/fusion/swap serveur et migration des anciennes références sans duplication.
-- Équilibrage survie V1 `À TESTER` : inventaire initial vide, récolte mains nues Tree/Stone, recettes et coûts de construction rééquilibrés, Bison à 300 s, drains Hunger 0,035 / Thirst 0,05 / Energy 0,025 par seconde et régénération conditionnée à Hunger/Thirst > 25.
+- Équilibrage survie V1 historique, remplacé par la référence V2 documentée ci-dessous.
 
 **MAYDEAD --- Project Status V1**
 
@@ -2628,3 +2628,14 @@ Statut : `IMPLÉMENTÉ — À TESTER STUDIO`
 - La liste Workbench est regroupée visuellement dans l'ordre fixe `CONSTRUCTION → FACTORY → DIVERS`. Chaque recette porte une `UiCategory` statique centralisée; l'ordre `SortOrder` historique reste inchangé dans chaque groupe.
 - Les séparateurs sont non interactifs, les cartes conservent leurs dimensions et callbacks, et le `ScrollingFrame` conserve son `AutomaticCanvasSize.Y` pour PC, tablette et téléphone.
 - Aucun RecipeId, ItemId, ingrédient, quantité, temps, résultat, validation serveur, Remote ou format persistant n'est modifié.
+
+## ÉQUILIBRAGE SURVIE V2
+
+Statut : `IMPLÉMENTÉ — À TESTER STUDIO`
+
+- Hunger utilise désormais `100 / 1140` par seconde : une jauge pleine atteint zéro en environ 19 minutes de temps actif, soit environ 1,12 cycle annuel MAYDEAD.
+- Thirst utilise désormais `100 / 900` par seconde : une jauge pleine atteint zéro en environ 15 minutes, soit environ 0,88 cycle annuel MAYDEAD.
+- La régénération normale de Health passe de 1 à 0,3 PV/s et conserve les conditions autoritaires existantes `Hunger > 25` et `Thirst > 25`.
+- Les dégâts existants restent inchangés : famine 0,35 PV/s (mort depuis 100 PV en environ 4 min 46 s) et déshydratation 0,5 PV/s (environ 3 min 20 s).
+- L'énergie reste inchangée : 0,005/s immobile, 0,065/s en mouvement, coût de récolte manuelle 0,75 et règles de fatigue/récupération existantes.
+- Aucun multiplicateur nocturne n'est ajouté. Aucun Remote, DataStore, `SchemaVersion`, format persistant, reset ou migration de jauge n'est introduit.
