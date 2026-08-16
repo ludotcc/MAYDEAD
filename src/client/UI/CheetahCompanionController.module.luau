@@ -9,7 +9,7 @@ local Config = require(ReplicatedStorage.Shared.Config.CheetahConfig)
 local ItemIconConfig = require(ReplicatedStorage.Shared.Config.ItemIconConfig)
 local remote = ReplicatedStorage:WaitForChild("CheetahCompanionRemote")
 local player = Players.LocalPlayer
-local controller = {Mounted = false, State = nil, Cheetah = nil}
+local controller = {Mounted = false, TouchSprint = false, State = nil, Cheetah = nil}
 
 local COLORS = {Health=Color3.fromRGB(219,72,78), Hunger=Color3.fromRGB(231,153,58), Stamina=Color3.fromRGB(66,190,211)}
 
@@ -94,8 +94,19 @@ function controller:Start()
 	local touchDismount=makeButton(gui,"DESCENDRE",UDim2.fromOffset(156,56),UDim2.new(1,-24,.56,0),function() remote:FireServer("Dismount") end)
 	touchDismount.Name="TouchDismountButton"; touchDismount.AnchorPoint=Vector2.new(1,.5); touchDismount.BackgroundColor3=Color3.fromRGB(25,91,108); touchDismount.TextSize=14; touchDismount.Visible=false; touchDismount.ZIndex=10
 	local touchDismountStroke=touchDismount:FindFirstChildOfClass("UIStroke"); if touchDismountStroke then touchDismountStroke.Color=Color3.fromRGB(79,178,194); touchDismountStroke.Transparency=.15; touchDismountStroke.Thickness=1.5 end
+	local touchSprint=makeButton(gui,"SPRINT",UDim2.fromOffset(156,56),UDim2.new(1,-24,.34,0),function() end)
+	touchSprint.Name="TouchSprintButton"; touchSprint.AnchorPoint=Vector2.new(1,.5); touchSprint.BackgroundColor3=Color3.fromRGB(19,38,46); touchSprint.TextSize=14; touchSprint.Visible=false; touchSprint.ZIndex=10
+	local touchSprintInput
+	touchSprint.InputBegan:Connect(function(input)
+		if input.UserInputType==Enum.UserInputType.Touch and touchSprint.Visible then controller.TouchSprint=true; touchSprintInput=input; touchSprint.BackgroundColor3=Color3.fromRGB(36,122,139) end
+	end)
+	UserInputService.InputEnded:Connect(function(input)
+		if input==touchSprintInput then controller.TouchSprint=false; touchSprintInput=nil; touchSprint.BackgroundColor3=Color3.fromRGB(19,38,46) end
+	end)
 	local function updateTouchDismountVisibility()
 		touchDismount.Visible=UserInputService.TouchEnabled and controller.Mounted
+		touchSprint.Visible=UserInputService.TouchEnabled and controller.Mounted
+		if not touchSprint.Visible then controller.TouchSprint=false; touchSprintInput=nil end
 	end
 	openNaming=function()
 		nameInput.Text=controller.State and controller.State.CompanionName or "Guépard"
@@ -156,7 +167,7 @@ function controller:Start()
 	UserInputService.InputBegan:Connect(function(input,processed) if not processed and controller.Mounted and input.KeyCode==Enum.KeyCode.E then remote:FireServer("Dismount") end end)
 	local deathConnection
 	local function cleanupMount()
-		controller.Mounted=false; unbindMountJump(); close(); updateTouchDismountVisibility()
+		controller.Mounted=false; controller.TouchSprint=false; unbindMountJump(); close(); updateTouchDismountVisibility()
 	end
 	local function watchCharacter(character)
 		if deathConnection then deathConnection:Disconnect(); deathConnection=nil end
@@ -193,7 +204,7 @@ function controller:Start()
 		local humanoid=player.Character and player.Character:FindFirstChildOfClass("Humanoid")
 		if not inputBlocked and UserInputService.TouchEnabled and humanoid and humanoid.MoveDirection.Magnitude>0 then direction=humanoid.MoveDirection end
 		if direction.Magnitude>1 then direction=direction.Unit end
-		remote:FireServer("MountInput",{Direction=direction,Sprint=UserInputService:IsKeyDown(Enum.KeyCode.LeftShift)})
+		remote:FireServer("MountInput",{Direction=direction,Sprint=UserInputService:IsKeyDown(Enum.KeyCode.LeftShift) or controller.TouchSprint})
 	end)
 end
 
