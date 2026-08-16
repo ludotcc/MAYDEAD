@@ -1712,6 +1712,7 @@ Statut : `VALIDÉ PAR LE GAME DIRECTOR`.
 - Le `Naval Seaplane` est produit uniquement dans la Factory avec `MetalPanelStack x40` et `PlasticPanelStack x30`, en 60 secondes de présence active du monde.
 - Un seul Naval Seaplane final est validé par monde. L'objectif principal terminé ne ferme ni ne supprime le monde : survie, construction, exploration et compteur d'années continuent.
 - Le record d'évasion conserve le plus faible nombre d'années sur l'archipel. Le record de longévité conserve le plus grand nombre d'années atteint et peut progresser après la fin principale.
+- Démonter un Recycler ou une IndustrialPress restitue la machine et toutes les ressources encore détenues, uniquement si l'inventaire peut accepter la totalité. Les files, l'input en cours et les outputs restent exacts; les compteurs `MetalMaterial`/`PlasticMaterial` du Recycler sont remboursés canoniquement en `MetalWaste`/`PlasticWaste`, leur conversion depuis un éventuel `WasteBag` étant déjà accomplie.
 
 **MAYDEAD --- Game Design Document V1**
 

@@ -682,6 +682,60 @@ function InventoryService:GetInventory(player)
 	return self.PlayerInventories[player]
 end
 
+function InventoryService:SimulateAddItems(player, items)
+	local inventory = self.PlayerInventories[player]
+	if not inventory or typeof(items) ~= "table" then return nil, "MissingInventory" end
+	local workingSlots = {}
+	for index = 1, TOTAL_SLOT_COUNT do workingSlots[index] = cloneSlot(inventory.Slots[index]) end
+	local itemIds = {}
+	for itemId, quantity in items do
+		local definition = typeof(itemId) == "string" and ItemDefinitions[itemId] or nil
+		if not definition or typeof(quantity) ~= "number" or quantity % 1 ~= 0 or quantity < 0 then
+			return nil, "InvalidRefund"
+		end
+		if quantity > 0 then table.insert(itemIds, itemId) end
+	end
+	table.sort(itemIds)
+	for _, itemId in itemIds do
+		local remaining = items[itemId]
+		local definition = ItemDefinitions[itemId]
+		for index = 1, TOTAL_SLOT_COUNT do
+			local slot = workingSlots[index]
+			if slot.ItemId == itemId and slot.Quantity < definition.MaxStack then
+				local added = math.min(remaining, definition.MaxStack - slot.Quantity)
+				slot.Quantity += added
+				remaining -= added
+				if remaining == 0 then break end
+			end
+		end
+		for index = 1, TOTAL_SLOT_COUNT do
+			if remaining == 0 then break end
+			local slot = workingSlots[index]
+			if slot.ItemId == nil then
+				local added = math.min(remaining, definition.MaxStack)
+				slot.ItemId = itemId
+				slot.Quantity = added
+				slot.WaterCharges = itemId == "Flask" and FlaskConfig.INITIAL_WATER_CHARGES or nil
+				remaining -= added
+			end
+		end
+		if remaining > 0 then return nil, "InventoryFull" end
+	end
+	return {Inventory = inventory, Slots = workingSlots}
+end
+
+function InventoryService:CommitSimulatedItems(player, simulation)
+	local inventory = self.PlayerInventories[player]
+	if not inventory or typeof(simulation) ~= "table" or simulation.Inventory ~= inventory
+		or typeof(simulation.Slots) ~= "table"
+	then
+		return false
+	end
+	inventory.Slots = simulation.Slots
+	self:_syncPlayer(player)
+	return true
+end
+
 function InventoryService:ExportInventory(player)
 	local inventory = self.PlayerInventories[player]
 	if not inventory then return nil end

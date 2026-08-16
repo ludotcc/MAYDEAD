@@ -685,13 +685,72 @@ function FactoryService:RestorePersistentState(machine, state)
 	return true, nil, recovered and {Recovered = true, Reason = "PartialFactoryState", Action = "InvalidFieldsReset"} or nil
 end
 
+local function addRefundItem(refundItems, itemId, quantity)
+	if typeof(itemId) ~= "string" or typeof(quantity) ~= "number" or quantity % 1 ~= 0 or quantity < 0 then return false end
+	if quantity > 0 then refundItems[itemId] = (refundItems[itemId] or 0) + quantity end
+	return true
+end
+
+function FactoryService:GetDismantleRefund(machine)
+	local data = self._machines[machine]
+	if not data or (data.Type ~= "Recycler" and data.Type ~= "IndustrialPress") then return nil, "UnsupportedMachine" end
+	local refundItems = {}
+	local emittedOutputs = {}
+	local inputTypes = data.Type == "Recycler" and WASTE_TYPES or BLOCK_TYPES
+	local outputTypes = data.Type == "Recycler"
+		and {MetalBlock = true, PlasticBlock = true}
+		or {MetalPanelStack = true, PlasticPanelStack = true}
+	for _, itemId in data.Queue do
+		if not inputTypes[itemId] or not addRefundItem(refundItems, itemId, 1) then return nil, "InvalidQueue" end
+	end
+	if data.CurrentItem ~= nil
+		and (not inputTypes[data.CurrentItem] or not addRefundItem(refundItems, data.CurrentItem, 1))
+	then
+		return nil, "InvalidCurrentItem"
+	end
+	for _, itemId in data.PendingOutputs do
+		if not outputTypes[itemId] or not addRefundItem(refundItems, itemId, 1) then return nil, "InvalidPendingOutput" end
+	end
+	for instance, itemId in data.EmittedOutputs do
+		if instance:IsDescendantOf(workspace) then
+			if not outputTypes[itemId] or not addRefundItem(refundItems, itemId, 1) then return nil, "InvalidEmittedOutput" end
+			table.insert(emittedOutputs, instance)
+		end
+	end
+	if data.Type == "Recycler" then
+		if not addRefundItem(refundItems, "MetalWaste", data.MetalMaterial)
+			or not addRefundItem(refundItems, "PlasticWaste", data.PlasticMaterial)
+		then return nil, "InvalidMaterialCounter" end
+	elseif not addRefundItem(refundItems, "MetalBlock", data.MetalBlocksProcessed)
+		or not addRefundItem(refundItems, "PlasticBlock", data.PlasticBlocksProcessed)
+	then
+		return nil, "InvalidBlockCounter"
+	end
+	return {Items = refundItems, EmittedOutputs = emittedOutputs, Data = data}
+end
+
 function FactoryService:CanDismantle(machine)
 	local data = self._machines[machine]
 	if not data then return true end
 	if data.Type == "Factory" then return data.BuildState == "Idle" and StationService:CanDismantle(machine) end
-	return #data.Queue == 0 and #data.PendingOutputs == 0 and not next(data.EmittedOutputs) and data.CurrentItem == nil
-		and data.MetalMaterial == 0 and data.PlasticMaterial == 0
-		and data.MetalBlocksProcessed == 0 and data.PlasticBlocksProcessed == 0
+	if data.Type == "Recycler" or data.Type == "IndustrialPress" then return self:GetDismantleRefund(machine) ~= nil end
+	return true
+end
+
+function FactoryService:CommitDismantle(machine, refund)
+	local data = self._machines[machine]
+	assert(data and refund and refund.Data == data, "Factory dismantle state changed")
+	for _, instance in refund.EmittedOutputs do
+		if data.EmittedOutputs[instance] then
+			self:_unregisterFactoryItem(instance)
+			data.EmittedOutputs[instance] = nil
+			if instance.Parent then instance:Destroy() end
+		end
+	end
+	self._machines[machine] = nil
+	self.ActiveRecyclers[machine] = nil
+	self.ActiveIndustrialPresses[machine] = nil
+	self._recyclerViewers[machine] = nil
 end
 
 function FactoryService:ClearWorldMachineRuntime()

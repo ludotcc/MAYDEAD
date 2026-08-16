@@ -2610,3 +2610,13 @@ Statut : `VALIDÉ PAR LE GAME DIRECTOR`
 - Une race P1 entre deux FinalFactory distinctes permettait auparavant deux consommations avant la completion mondiale. `_startFinalBuild` refuse désormais tout démarrage lorsqu'une autre FinalFactory enregistrée n'est plus `Idle`; la garde est évaluée avant la consommation et sans yield.
 - Le comportement réel des assets Boat, Naval Seaplane et FinalFactory, leur assemblage et leur persistance dans le périmètre du chantier ont été validés par le Game Director.
 - Aucun Remote, asset, DataStore, namespace, version de schéma, inventaire, membership, SessionLock ou format monde n'est modifié.
+
+## FACTORY DISMANTLE FULL REFUND
+
+Statut : `IMPLÉMENTÉ — À TESTER STUDIO`
+
+- Recycler et IndustrialPress peuvent être démontés avec leur état non vide. Le serveur capture files, input engagé, compteurs partiels, outputs en attente et outputs physiques encore attribués avant toute mutation.
+- Le remboursement Recycler conserve les ItemId exacts disponibles et convertit canoniquement `MetalMaterial` en `MetalWaste` et `PlasticMaterial` en `PlasticWaste`, unité pour unité. IndustrialPress restitue ses compteurs partiels en `MetalBlock`/`PlasticBlock`, unité pour unité.
+- Les 28 slots sont simulés ensemble avec fusion des stacks et limites `MaxStack`. Une capacité insuffisante refuse tout le démontage sans modifier machine, outputs ou inventaire.
+- Après validation, l'inventaire simulé est appliqué une seule fois, les outputs physiques remboursés sont détruits, la machine est désenregistrée puis supprimée. Aucun yield, nouveau Remote, changement DataStore, schéma, snapshot ou migration.
+- AutomaticLoader et ConveyorStraight restent sur leur comportement existant.

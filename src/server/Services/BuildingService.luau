@@ -1927,12 +1927,28 @@ function BuildingService:_handleDismantleRequest(player, target)
 		self:_rejectDismantle(player, structure, "StationNotEmpty", itemId == "Chest" and "Chest not empty" or "station not empty")
 		return
 	end
-	if (itemId == "Recycler" or itemId == "IndustrialPress" or itemId == "Factory") and not FactoryService:CanDismantle(structure) then
+	local factoryRefund
+	if itemId == "Recycler" or itemId == "IndustrialPress" then
+		factoryRefund = FactoryService:GetDismantleRefund(structure)
+		if not factoryRefund then
+			self._dismantleHits[structure] = damage
+			self:_rejectDismantle(player, structure, "InvalidFactoryState", "factory machine state is not refundable")
+			return
+		end
+	end
+	if itemId == "Factory" and not FactoryService:CanDismantle(structure) then
 		self._dismantleHits[structure] = damage
-		self:_rejectDismantle(player, structure, "StationNotEmpty", "factory machine not empty")
+		self:_rejectDismantle(player, structure, "InvalidFactoryState", "factory machine state is not refundable")
 		return
 	end
-	if not InventoryService:CanAddItem(player, itemId, 1) then
+	local inventorySimulation
+	if factoryRefund then
+		factoryRefund.Items[itemId] = (factoryRefund.Items[itemId] or 0) + 1
+		inventorySimulation = InventoryService:SimulateAddItems(player, factoryRefund.Items)
+	end
+	if (factoryRefund and not inventorySimulation)
+		or (not factoryRefund and not InventoryService:CanAddItem(player, itemId, 1))
+	then
 		self._dismantleHits[structure] = damage
 		self:_rejectDismantle(player, structure, "InventoryFull", "inventory full")
 		return
@@ -1940,13 +1956,20 @@ function BuildingService:_handleDismantleRequest(player, target)
 
 	local previousParent = structure.Parent
 	structure.Parent = nil
-	local returned = InventoryService:AddItem(player, itemId, 1)
-	if returned.Remaining > 0 then
+	local inventoryCommitted
+	if factoryRefund then
+		inventoryCommitted = InventoryService:CommitSimulatedItems(player, inventorySimulation)
+	else
+		local returned = InventoryService:AddItem(player, itemId, 1)
+		inventoryCommitted = returned.Remaining == 0
+	end
+	if not inventoryCommitted then
 		structure.Parent = previousParent
 		self._dismantleHits[structure] = damage
 		self:_rejectDismantle(player, structure, "InventoryFull", "inventory full")
 		return
 	end
+	if factoryRefund then FactoryService:CommitDismantle(structure, factoryRefund) end
 
 	self:_releaseStructureOccupancy(structure)
 	self:_refreshCeilingSupportMetadata()
