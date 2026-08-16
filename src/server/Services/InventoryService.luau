@@ -402,7 +402,28 @@ function InventoryService.new()
 	self._flaskResult.Name = FLASK_RESULT_NAME
 	self._flaskResult.Parent = ReplicatedStorage
 	self._lastFlaskAttempts = {}
+	self._requestBudgets = {}
+	self._lastStateRequests = {}
 	return self
+end
+
+function InventoryService:_consumeRequestBudget(player)
+	local now = os.clock()
+	local budget = self._requestBudgets[player]
+	if not budget then
+		budget = {Tokens = InventoryConfig.REQUEST_BURST_CAPACITY, UpdatedAt = now}
+		self._requestBudgets[player] = budget
+	else
+		local elapsed = math.max(0, now - budget.UpdatedAt)
+		budget.Tokens = math.min(
+			InventoryConfig.REQUEST_BURST_CAPACITY,
+			budget.Tokens + elapsed * InventoryConfig.REQUEST_RATE_PER_SECOND
+		)
+		budget.UpdatedAt = now
+	end
+	if budget.Tokens < 1 then return false end
+	budget.Tokens -= 1
+	return true
 end
 
 function InventoryService:_removeUnownedStarterTools(player)
@@ -440,6 +461,8 @@ function InventoryService:Start()
 
 	Players.PlayerRemoving:Connect(function(player)
 		self._lastFlaskAttempts[player] = nil
+		self._requestBudgets[player] = nil
+		self._lastStateRequests[player] = nil
 		-- WorldService and WorldSessionService capture the logical inventory during
 		-- PlayerRemoving. Keep it available until every synchronous departure
 		-- handler has had a chance to export the final 28-slot snapshot.
@@ -450,9 +473,17 @@ function InventoryService:Start()
 
 	self._request.OnServerEvent:Connect(function(player, action, data)
 		if player:GetAttribute("SessionStarted") ~= true then return end
-		if not self.PlayerInventories[player] then
+		if not self.PlayerInventories[player] or typeof(action) ~= "string" then return end
+
+		if action == "RequestState" then
+			local now = os.clock()
+			if now - (self._lastStateRequests[player] or -math.huge) < InventoryConfig.STATE_REQUEST_MIN_INTERVAL then return end
+			self._lastStateRequests[player] = now
+			self:_syncPlayer(player)
 			return
 		end
+		if action ~= "Move" and action ~= "Use" and action ~= "SelectQuickSlot" and action ~= "ClearSelectedItem" then return end
+		if not self:_consumeRequestBudget(player) then return end
 
 		if action == "Move" then
 			self:_handleMove(player, data)
@@ -462,8 +493,6 @@ function InventoryService:Start()
 			self:_handleSelectQuickSlot(player, data)
 		elseif action == "ClearSelectedItem" then
 			self:ClearSelectedItem(player)
-		elseif action == "RequestState" then
-			self:_syncPlayer(player)
 		end
 	end)
 
