@@ -91,6 +91,12 @@ function controller:Start()
 		namingFeedback.Text=""; remote:FireServer("SetName",nameInput.Text)
 	end); validateName.ZIndex=21
 	local later=makeButton(naming,"PLUS TARD",UDim2.fromOffset(100,24),UDim2.new(.5,-50,1,-24),function() naming.Visible=false end); later.ZIndex=21; later.BackgroundTransparency=1
+	local touchDismount=makeButton(gui,"DESCENDRE",UDim2.fromOffset(156,56),UDim2.new(1,-24,.56,0),function() remote:FireServer("Dismount") end)
+	touchDismount.Name="TouchDismountButton"; touchDismount.AnchorPoint=Vector2.new(1,.5); touchDismount.BackgroundColor3=Color3.fromRGB(25,91,108); touchDismount.TextSize=14; touchDismount.Visible=false; touchDismount.ZIndex=10
+	local touchDismountStroke=touchDismount:FindFirstChildOfClass("UIStroke"); if touchDismountStroke then touchDismountStroke.Color=Color3.fromRGB(79,178,194); touchDismountStroke.Transparency=.15; touchDismountStroke.Thickness=1.5 end
+	local function updateTouchDismountVisibility()
+		touchDismount.Visible=UserInputService.TouchEnabled and controller.Mounted
+	end
 	openNaming=function()
 		nameInput.Text=controller.State and controller.State.CompanionName or "Guépard"
 		namingFeedback.Text=""; naming.Visible=true; nameInput:CaptureFocus()
@@ -143,14 +149,14 @@ function controller:Start()
 				if controller.State then controller.State.CompanionName=state.CompanionName; render(controller.State) end
 				naming.Visible=false
 			else namingFeedback.Text="NOM INVALIDE" end
-		elseif action=="Mounted" then controller.Mounted=true; close(); bindMountJump()
-		elseif action=="Dismounted" then controller.Mounted=false; unbindMountJump()
+		elseif action=="Mounted" then controller.Mounted=true; close(); bindMountJump(); updateTouchDismountVisibility()
+		elseif action=="Dismounted" then controller.Mounted=false; unbindMountJump(); updateTouchDismountVisibility()
 		elseif action=="State" and frame.Visible then render(state) end
 	end)
 	UserInputService.InputBegan:Connect(function(input,processed) if not processed and controller.Mounted and input.KeyCode==Enum.KeyCode.E then remote:FireServer("Dismount") end end)
 	local deathConnection
 	local function cleanupMount()
-		controller.Mounted=false; unbindMountJump(); close()
+		controller.Mounted=false; unbindMountJump(); close(); updateTouchDismountVisibility()
 	end
 	local function watchCharacter(character)
 		if deathConnection then deathConnection:Disconnect(); deathConnection=nil end
