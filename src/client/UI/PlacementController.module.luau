@@ -72,7 +72,6 @@ local controller = {
 	PreviewSize = nil,
 	PreviewBoxToPivot = nil,
 	ActiveSnap = nil,
-	LastLoggedSnapKey = nil,
 	RotationYaw = 0,
 	RotationIndex = 0,
 	RenderConnection = nil,
@@ -689,21 +688,6 @@ function controller:_applySnapPreview(snap, definition, rootPart, character)
 			Mode = snap.Mode,
 		})
 	self.ActiveSnap = valid and snap or nil
-	if valid and self.ActiveItemId == "Ceiling" then
-		local snapKey = snap.TargetStructureId .. ":" .. snap.SnapId
-		if self.LastLoggedSnapKey ~= snapKey then
-			print("[MAYDEAD] Ceiling snap candidate = " .. snapKey)
-			if snap.SourceMode == "WallTop" then
-				print("[MAYDEAD] Ceiling snapped to wall = " .. snap.TargetStructureId)
-			elseif snap.Mode == "Horizontal" then
-				print("[MAYDEAD] Ceiling snapped to ceiling edge = " .. snap.SnapId)
-			end
-			print("[MAYDEAD] Snap position = " .. tostring(snap.TargetBox.Position))
-			self.LastLoggedSnapKey = snapKey
-		end
-	elseif not valid then
-		self.LastLoggedSnapKey = nil
-	end
 	self:_setPreviewState(valid, not supported and "InsufficientSupport" or nil)
 end
 
@@ -756,7 +740,6 @@ function controller:_updatePreview()
 		end
 	end
 	self.ActiveSnap = nil
-	self.LastLoggedSnapKey = nil
 
 	local groundCFrame = CFrame.new(result.Position) * CFrame.Angles(0, self.RotationYaw, 0)
 	local targetBoxCFrame = self:_pivotPreview(groundCFrame)
@@ -819,7 +802,6 @@ function controller:_stopPlacement(clearActivePlacement)
 	self.PreviewSize = nil
 	self.PreviewBoxToPivot = nil
 	self.ActiveSnap = nil
-	self.LastLoggedSnapKey = nil
 end
 
 function controller:_startPlacement(itemId)
@@ -848,8 +830,6 @@ function controller:_startPlacement(itemId)
 		warn("[MAYDEAD] " .. itemId .. " preview Model contains no BasePart")
 		return
 	end
-	print("[MAYDEAD] Placement template = " .. template.Name)
-
 	local preview = template:Clone()
 	preview.Name = "MAYDEADPlacementPreview"
 	for _, descendant in preview:GetDescendants() do
@@ -864,10 +844,6 @@ function controller:_startPlacement(itemId)
 	preview.Parent = workspace
 	local pivot = preview:GetPivot()
 	local boxCFrame, boxSize = getPlacementBox(preview)
-	if itemId == "Ceiling" then
-		local horizontal = boxSize.Y <= boxSize.X and boxSize.Y <= boxSize.Z
-		print("[MAYDEAD] Ceiling preview horizontal = " .. tostring(horizontal))
-	end
 
 	local highlight = Instance.new("Highlight")
 	highlight.Name = "PlacementValidity"
@@ -959,7 +935,6 @@ function controller:_startPlacement(itemId)
 	self.RenderConnection = RunService.RenderStepped:Connect(function()
 		self:_updatePreview()
 	end)
-	print("[MAYDEAD] Placement preview started = " .. itemId)
 end
 
 function controller:_cancelPlacement()
@@ -979,9 +954,6 @@ function controller:_handleInventory(state)
 	if definition and definition.Placeable == true then
 		if self.ActivePlacementItemId and self.ActivePlacementItemId ~= itemId then
 			placementRequest:FireServer(self.ActivePlacementItemId, {Cancel = true})
-		end
-		if self.ActiveItemId ~= itemId then
-			print("[MAYDEAD] Selected placeable = " .. itemId)
 		end
 		self:_startPlacement(itemId)
 	elseif self.ActivePlacementItemId then
@@ -1015,7 +987,6 @@ function controller:Start()
 			return
 		end
 		if success then
-			print("[MAYDEAD] Placement completed")
 			local remaining = typeof(remainingQuantity) == "number"
 				and remainingQuantity
 				or getTotalItemQuantity(self.LastInventoryState, itemId)
@@ -1048,7 +1019,6 @@ function controller:Start()
 	if InventoryController.Inventory then
 		self:_handleInventory(InventoryController.Inventory)
 	end
-	print("[MAYDEAD] PlacementController started")
 end
 
 return controller

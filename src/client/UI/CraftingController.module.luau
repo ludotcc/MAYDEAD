@@ -20,7 +20,6 @@ local ItemDefinitions = require(requireChild(DefinitionsFolder, "ItemDefinitions
 local ItemIconConfig = require(requireChild(ConfigFolder, "ItemIconConfig"))
 local RecipeDefinitions = require(requireChild(DefinitionsFolder, "RecipeDefinitions"))
 
-print("[MAYDEAD] CraftingController module loaded")
 
 local inventoryControllerModule = script.Parent:FindFirstChild("InventoryController")
 	or script.Parent:FindFirstChild("InventoryController.module")
@@ -339,7 +338,6 @@ function controller:_build()
 end
 
 function controller:Start()
-	print("[MAYDEAD] CraftingController Start called")
 	if self.Started then
 		return
 	end
@@ -355,11 +353,9 @@ function controller:Start()
 		if success then
 			self.Feedback.TextColor3 = Color3.fromRGB(132, 206, 164)
 			self.Feedback.Text = "FABRICATION RÉUSSIE"
-			print("[MAYDEAD] Craft completed: " .. tostring(recipeId))
 		else
 			self.Feedback.TextColor3 = Color3.fromRGB(224, 132, 132)
 			self.Feedback.Text = reason == "InventoryFull" and "INVENTAIRE PLEIN" or "FABRICATION IMPOSSIBLE"
-			warn("[MAYDEAD] Craft rejected: " .. tostring(reason))
 		end
 		local feedbackText = self.Feedback.Text
 		task.delay(1.5, function()
@@ -401,7 +397,6 @@ function controller:Start()
 		end
 	end)
 
-	print("[MAYDEAD] Basic crafting UI ready")
 end
 
 return controller

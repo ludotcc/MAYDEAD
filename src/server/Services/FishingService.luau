@@ -77,17 +77,6 @@ local function isValidRequest(action, first, second)
 	return first == nil and second == nil
 end
 
-local function logRootVelocity(player, stage)
-	local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
-	if not root or not root:IsA("BasePart") then return end
-	print(string.format(
-		"[MAYDEAD][FISHING] %s root linear=%s angular=%s",
-		stage,
-		tostring(root.AssemblyLinearVelocity),
-		tostring(root.AssemblyAngularVelocity)
-	))
-end
-
 function FishingService.new()
 	local self = setmetatable({}, FishingService)
 	self._sessions = {}
@@ -122,19 +111,7 @@ end
 function FishingService:_prepareAssets()
 	local imports = ServerStorage:FindFirstChild("AssetImports")
 	local rod = imports and imports:FindFirstChild("Fishing_Rod", true)
-	print("[MAYDEAD][FISHING] Fishing_Rod found = " .. tostring(rod ~= nil))
-	if rod then
-		local mainPart = rod:IsA("Tool") and rod:FindFirstChild("Handle")
-			or (rod:IsA("Model") and rod.PrimaryPart)
-			or rod:FindFirstChildWhichIsA("BasePart", true)
-		print("[MAYDEAD][FISHING] Fishing_Rod full name = " .. rod:GetFullName())
-		print("[MAYDEAD][FISHING] Main part = " .. (mainPart and mainPart:GetFullName() or "NONE"))
-	end
 	local rope = rod and rod:FindFirstChildWhichIsA("RopeConstraint", true)
-	print("[MAYDEAD][FISHING] RopeConstraint found = " .. tostring(rope ~= nil))
-	if rope then
-		print("[MAYDEAD][FISHING] RopeConstraint full name = " .. rope:GetFullName())
-	end
 	if rod and rope then
 		local lineStart = findNamed(rod, "LineStart", "Attachment")
 		local bobberPoint = findNamed(rod, "BobberPoint", "Attachment")
@@ -150,19 +127,8 @@ function FishingService:_prepareAssets()
 			rope.Attachment0 = lineStart
 			rope.Attachment1 = bobberPoint
 		end
-		print("[MAYDEAD][FISHING] LineStart ready = " .. tostring(lineStart ~= nil))
-		print("[MAYDEAD][FISHING] BobberPoint ready = " .. tostring(bobberPoint ~= nil))
-		if lineStart then print("[MAYDEAD][FISHING] LineStart parent = " .. lineStart.Parent:GetFullName()) end
-		if bobberPoint then print("[MAYDEAD][FISHING] BobberPoint parent = " .. bobberPoint.Parent:GetFullName()) end
-	else
-		print("[MAYDEAD][FISHING] LineStart ready = false")
-		print("[MAYDEAD][FISHING] BobberPoint ready = false")
 	end
 	self._fishTemplate = imports and imports:FindFirstChild("Fish_Common", true)
-	print("[MAYDEAD][FISHING] Fish_Common found = " .. tostring(self._fishTemplate ~= nil))
-	if self._fishTemplate then
-		print("[MAYDEAD][FISHING] Fish_Common full name = " .. self._fishTemplate:GetFullName())
-	end
 end
 
 function FishingService:_getEquippedRod(player)
@@ -296,7 +262,6 @@ function FishingService:_beginWaiting(player, session, quality, biteChance)
 		return
 	end
 	session.State = "Casting"
-	logRootVelocity(player, "before cast")
 	self._state:FireClient(player, "Casting", session.Id, quality)
 	local targetCFrame = CFrame.new(session.TargetPosition + Vector3.new(0, 0.15, 0)) * visual.CFrame.Rotation
 	TweenService:Create(visual, TweenInfo.new(FishingConfig.VisualCastDuration, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
@@ -304,13 +269,11 @@ function FishingService:_beginWaiting(player, session, quality, biteChance)
 	}):Play()
 	task.delay(FishingConfig.VisualCastDuration, function()
 		if self._sessions[player] ~= session then return end
-		logRootVelocity(player, "after cast")
 		session.State = "WaitingBite"
 		self._state:FireClient(player, "WaitingBite", session.Id, quality)
 		local delaySeconds = math.random() * (FishingConfig.BiteDelayMax - FishingConfig.BiteDelayMin) + FishingConfig.BiteDelayMin
 		task.delay(delaySeconds, function()
 			if self._sessions[player] ~= session or session.State ~= "WaitingBite" then return end
-			logRootVelocity(player, "before bite")
 			if math.random() > biteChance then
 				self:_finish(player, "RIEN N'A MORDU")
 				return
@@ -335,11 +298,7 @@ function FishingService:_beginWaiting(player, session, quality, biteChance)
 			session.Holding = false
 			session.NextImpulseAt = os.clock() + FishingConfig.FightStartGracePeriod
 			session.NextTargetChangeAt = os.clock() + FishingConfig.FightStartGracePeriod
-			logRootVelocity(player, "at bite")
 			self._state:FireClient(player, "Bite", session.Id)
-			task.defer(function()
-				if self._sessions[player] == session then logRootVelocity(player, "after bite") end
-			end)
 		end)
 	end)
 end
@@ -387,7 +346,6 @@ function FishingService:_animateFishReward(player, session)
 		return
 	end
 	session.State = "Reeling"
-	logRootVelocity(player, "reel start")
 	self._state:FireClient(player, "Reeling", session.Id)
 	local template = self._fishTemplate
 	local visual = template and template:Clone()
@@ -420,11 +378,9 @@ function FishingService:_animateFishReward(player, session)
 			RunService.Heartbeat:Wait()
 		end
 		if visual then visual:Destroy() end
-		logRootVelocity(player, "reel end")
 		if self._sessions[player] ~= session then return end
 		local result = InventoryService:AddItem(player, "Fish_Common", 1)
 		if result.Added == 1 then
-			print("[MAYDEAD][FISHING] Fish_Common added to inventory")
 			self:_finish(player, "POISSON CAPTURÉ")
 		else
 			self:_finish(player, "INVENTAIRE PLEIN")

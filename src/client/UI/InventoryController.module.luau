@@ -146,7 +146,6 @@ end
 local function buildItemFallback(parent, itemId)
 	local definition = ItemDefinitions[itemId]
 	local fallbackText = string.upper(string.sub(definition and definition.DisplayName or itemId, 1, 2))
-	print("[MAYDEAD] Inventory fallback icon = " .. fallbackText .. ", ItemId = " .. itemId)
 	local label = Instance.new("TextLabel")
 	label.Name = "ItemFallback"
 	label.Size = UDim2.new(1, -4, 1, -4)
@@ -378,7 +377,6 @@ function controller:FinishInventoryDrag(position)
 	local targetKind, targetIndex = self:GetInventoryDrop(position)
 	if self.DragGhost then
 		if drag.Kind == "Inventory" and targetKind == "Quick" then
-			print("[MAYDEAD] Drop released on QuickSlot: " .. targetIndex)
 			inventoryRequest:FireServer("Move", {fromIndex = drag.Index, toIndex = MAIN_SLOT_COUNT + targetIndex})
 		elseif drag.Kind == "Inventory" and targetKind == "Inventory" and drag.Index ~= targetIndex then
 			inventoryRequest:FireServer("Move", {fromIndex = drag.Index, toIndex = targetIndex})
@@ -453,7 +451,6 @@ function controller:BindInput()
 		Enum.KeyCode.E
 	)
 	self.InventoryInputBound = true
-	print("[MAYDEAD] Inventory binding active: E fallback after priority interactions")
 end
 
 function controller:BuildMobileButton()
@@ -1180,7 +1177,6 @@ function controller:SetOpen(open)
 			})
 			self.ScaleTween:Play()
 		end
-		print("[MAYDEAD] Inventory opened")
 	else
 		self.BackgroundTween = TweenService:Create(self.MainFrame, TweenInfo.new(0.14, Enum.EasingStyle.Quad, Enum.EasingDirection.Out), {
 			BackgroundTransparency = 1,
@@ -1192,7 +1188,6 @@ function controller:SetOpen(open)
 			})
 			self.ScaleTween:Play()
 		end
-		print("[MAYDEAD] Inventory closed")
 		task.delay(0.14, function()
 			if self.Open or self.VisualTransitionId ~= transitionId then
 				return
@@ -1204,7 +1199,6 @@ function controller:SetOpen(open)
 end
 
 function controller:Start()
-	print("[MAYDEAD] InventoryController runtime active")
 	self:Build()
 end
 

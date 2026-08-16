@@ -1,3 +1,3 @@
 return table.freeze({
-	BALANCE_DEBUG = true,
+	BALANCE_DEBUG = false,
 })

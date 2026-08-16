@@ -45,7 +45,6 @@ end
 
 function controller:Start()
 	local gui=Instance.new("ScreenGui"); gui.Name="CheetahCompanionGui"; gui.ResetOnSpawn=false; gui.Enabled=true; gui.DisplayOrder=12; gui.Parent=player:WaitForChild("PlayerGui")
-	print(string.format("[MAYDEAD][CHEETAH][UI][CLIENT] Controller started Remote=%s ScreenGui=%s", remote:GetFullName(), gui:GetFullName()))
 	local frame=Instance.new("Frame"); frame.Size=UDim2.fromOffset(390,370); frame.Position=UDim2.new(.5,0,.62,0); frame.AnchorPoint=Vector2.new(.5,.5)
 	frame.BackgroundColor3=Color3.fromRGB(7,12,17); frame.BackgroundTransparency=.06; frame.BorderSizePixel=0; frame.Visible=false; frame.Parent=gui; corner(frame,15)
 	local panelScale=Instance.new("UIScale"); panelScale.Name="ResponsiveScale"; panelScale.Parent=frame
@@ -146,14 +145,7 @@ function controller:Start()
 	remote.OnClientEvent:Connect(function(action,state,cheetah)
 		if state and action~="NameResult" then render(state) end
 		if action=="Open" then
-			local count=0; for _,slot in state.Inventory or {} do count+=slot.Quantity or 0 end
-			print(string.format("[MAYDEAD][CHEETAH][UI][CLIENT] Open event received Cheetah=%s OwnerUserId=%s Health=%s MaxHealth=%s Hunger=%s FoodCount=%d Stamina=%s Command=%s Mounted=%s",
-				cheetah and cheetah:GetFullName() or "nil", tostring(state.OwnerUserId), tostring(state.Health), tostring(state.MaxHealth),
-				tostring(state.Hunger), count, tostring(state.MountStamina), tostring(state.Command), tostring(state.Mounted)))
 			controller.Cheetah=cheetah; gui.Enabled=true; frame.Visible=not frame.Visible
-			print(string.format("[MAYDEAD][CHEETAH][UI][CLIENT] ScreenGui=true Enabled=%s Frame=true Visible=%s Parent=%s AbsoluteSize=%s AbsolutePosition=%s DisplayOrder=%d",
-				tostring(gui.Enabled), tostring(frame.Visible), gui.Parent:GetFullName(), tostring(frame.AbsoluteSize), tostring(frame.AbsolutePosition), gui.DisplayOrder))
-			if frame.Visible then print("[MAYDEAD][CHEETAH][UI][CLIENT] CompanionUI opened=true") end
 		elseif action=="PromptName" then controller.Cheetah=cheetah; render(state); openNaming()
 		elseif action=="NameResult" then
 			if state and state.Ok then
@@ -182,12 +174,10 @@ function controller:Start()
 		if frame.Visible and os.clock()-lastDistance>.2 then lastDistance=os.clock(); local root=player.Character and player.Character:FindFirstChild("HumanoidRootPart")
 			local cheetahPosition=getCheetahInteractionPosition(controller.Cheetah)
 			if not root or not cheetahPosition then
-				print("[MAYDEAD][CHEETAH][UI][CLIENT] AutoClose reason=InvalidCompanion")
 				close()
 			else
 				local distance=(root.Position-cheetahPosition).Magnitude
 				if distance>Config.COMPANION_UI_CLOSE_DISTANCE then
-					print(string.format("[MAYDEAD][CHEETAH][UI][CLIENT] AutoClose reason=Distance distance=%.2f threshold=%.2f",distance,Config.COMPANION_UI_CLOSE_DISTANCE))
 					close()
 				end
 			end

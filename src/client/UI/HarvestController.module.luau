@@ -5,7 +5,6 @@ local UserInputService = game:GetService("UserInputService")
 local GuiService = game:GetService("GuiService")
 local SoundService = game:GetService("SoundService")
 
-print("[MAYDEAD] HarvestController module loaded")
 
 local player = Players.LocalPlayer
 local playerGui = player:WaitForChild("PlayerGui")
@@ -419,17 +418,12 @@ function HarvestController:_connectTool(tool)
 	self.ConnectedTools[tool] = true
 	self.RestGrips[tool] = tool.Grip
 	tool.Activated:Connect(function()
-		print("[MAYDEAD] Tool activated: " .. tool.Name)
-
 		local camera = workspace.CurrentCamera
 		if not camera then
-			print("[MAYDEAD] Raycast hit = NONE")
-			print("[MAYDEAD] Harvest target = NONE")
 			return
 		end
 
 		local hitPart = self:_raycastTarget()
-		print("[MAYDEAD] Raycast hit = " .. (hitPart and hitPart:GetFullName() or "NONE"))
 
 		local resource = findResource(hitPart)
 		if not resource then
@@ -446,13 +440,9 @@ function HarvestController:_connectTool(tool)
 			local structure = findPlacedStructure(hitPart)
 			if tool.Name == "Axe" and structure then
 				dismantleRequest:FireServer(structure)
-			else
-				print("[MAYDEAD] Hit is not a harvest resource")
-				print("[MAYDEAD] Harvest target = NONE")
 			end
 			return
 		end
-		print("[MAYDEAD] Harvest model = " .. resource.Name)
 		harvestRequest:FireServer(resource)
 	end)
 end
@@ -467,7 +457,6 @@ function HarvestController:_watchContainer(container)
 end
 
 function HarvestController:Start()
-	print("[MAYDEAD] HarvestController Start called")
 	UserInputService.InputBegan:Connect(function(input, gameProcessed)
 		if input.UserInputType == Enum.UserInputType.Touch then
 			self.LastTouchPosition = Vector2.new(input.Position.X, input.Position.Y)
@@ -488,7 +477,6 @@ function HarvestController:Start()
 	player.CharacterAdded:Connect(function(character)
 		self:_watchContainer(character)
 	end)
-	print("[MAYDEAD] Harvest input binding active")
 
 	harvestResult.OnClientEvent:Connect(function(impactName, currentHealth, maximumHealth, isHandHarvest, resource)
 		if impactName == "ToolRequired" then

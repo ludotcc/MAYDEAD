@@ -88,7 +88,6 @@ end
 function ResourceService:_handleHarvest(player, target)
 	local resource = self:_getResource(target)
 	if not resource then
-		print("[MAYDEAD] Harvest rejected: invalid target")
 		return
 	end
 
@@ -101,10 +100,6 @@ function ResourceService:_handleHarvest(player, target)
 	end
 
 	local equippedTool = character:FindFirstChildOfClass("Tool")
-	print("[MAYDEAD] Harvest request:")
-	print("Player = " .. player.Name)
-	print("Tool = " .. (equippedTool and equippedTool.Name or "NONE"))
-	print("Resource = " .. resource.Name)
 	local damage
 	local rewardQuantity = definition.LootQuantity
 	if definition.LootQuantityMin and definition.LootQuantityMax then
@@ -114,7 +109,6 @@ function ResourceService:_handleHarvest(player, target)
 	if equippedTool and equippedTool:IsA("Tool") then
 		local toolDefinition = definition.Tools[equippedTool.Name]
 		if not toolDefinition or InventoryService:GetActiveItem(player) ~= toolDefinition.ItemId then
-			print("[MAYDEAD] Harvest rejected: wrong tool")
 			return
 		end
 		damage = toolDefinition.Damage
@@ -135,21 +129,18 @@ function ResourceService:_handleHarvest(player, target)
 	end
 
 	if getResourceDistance(rootPart, resource) > HarvestConfig.HARVEST_RANGE then
-		print("[MAYDEAD] Harvest rejected: too far")
 		return
 	end
 
 	local now = os.clock()
 	local lastHit = self._lastHits[player] or 0
 	if now - lastHit < HarvestConfig.HARVEST_COOLDOWN then
-		print("[MAYDEAD] Harvest rejected: cooldown")
 		return
 	end
 	self._lastHits[player] = now
 
 	local healthValue = findHealthValue(resource)
 	if not healthValue or healthValue.Value <= 0 then
-		print("[MAYDEAD] Harvest rejected: resource dead")
 		return
 	end
 	local maximumHealth = self._maximumHealth[resource] or healthValue.Value
@@ -157,14 +148,11 @@ function ResourceService:_handleHarvest(player, target)
 
 	local willDestroy = healthValue.Value - damage <= 0
 	if willDestroy and not InventoryService:CanAddItem(player, definition.LootItemId, rewardQuantity) then
-		print("[MAYDEAD] Harvest rejected: inventory full")
 		self._result:FireClient(player, "InventoryFull")
 		return
 	end
 
 	healthValue.Value = math.max(0, healthValue.Value - damage)
-	print("[MAYDEAD] Harvest accepted")
-	print("[MAYDEAD] " .. resource.Name .. " Health = " .. tostring(healthValue.Value))
 	if isHandHarvest then
 		SurvivalService:ConsumeEnergy(player, SurvivalService.HandHarvestEnergyCost)
 	end
