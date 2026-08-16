@@ -1,7 +1,7 @@
 return {
 	MaxCastDistance = 45,
-	TouchTapMoveTolerance = 16,
-	TouchTapMaxDuration = 0.5,
+	TouchTapMoveTolerance = 32,
+	TouchTapMaxDuration = 0.75,
 	BiteDelayMin = 2,
 	BiteDelayMax = 6,
 	ExcellentBiteChance = 0.90,

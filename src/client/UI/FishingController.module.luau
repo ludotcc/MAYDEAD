@@ -272,7 +272,7 @@ function controller:_updateTouch(input)
 	end
 end
 
-function controller:_finishTouch(input, gameProcessed)
+function controller:_finishTouch(input)
 	local touch = self.TouchInput
 	if not touch or touch.Input ~= input then return end
 	self.TouchInput = nil
@@ -280,7 +280,7 @@ function controller:_finishTouch(input, gameProcessed)
 		self:_performPrimaryAction(false)
 		return
 	end
-	if gameProcessed or touch.Cancelled or self.State ~= touch.State
+	if touch.Cancelled or self.State ~= touch.State
 		or os.clock() - touch.StartedAt > FishingConfig.TouchTapMaxDuration
 		or not self:_canUseTouchFishing()
 	then
@@ -317,7 +317,7 @@ function controller:Start()
 		if input.UserInputType == Enum.UserInputType.MouseButton1 and self.State == "Fight" then
 			self:_performPrimaryAction(false)
 		elseif input.UserInputType == Enum.UserInputType.Touch then
-			self:_finishTouch(input, gameProcessed)
+			self:_finishTouch(input)
 		end
 	end)
 	local function watchCharacter(character)
