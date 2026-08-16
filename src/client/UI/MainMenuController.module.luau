@@ -367,7 +367,7 @@ function controller:_renderWorldState(state)
 			card.Empty.Visible = false
 		elseif saved and not state.Active then
 			card.Name.Text = saved.DisplayName or ("MONDE " .. tostring(index))
-			card.Meta.Text = string.format("ÂGE %d   •   1–%d JOUEURS", saved.Age or 10, saved.MaxPlayers or 1)
+			card.Meta.Text = string.format("ANNÉE %d   •   1–%d JOUEURS", saved.YearsOnIsland or 0, saved.MaxPlayers or 1)
 			card.Action.Text = "CONTINUER"
 			card.Action.Visible = true
 			card.Empty.Visible = false

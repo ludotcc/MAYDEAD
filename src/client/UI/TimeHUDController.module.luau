@@ -16,7 +16,7 @@ local function buildHUD()
 	if existingContent then existingContent:Destroy() end
 
 	local timeState = ReplicatedStorage:WaitForChild("TimeState")
-	local ageValue = timeState:WaitForChild("Age")
+	local yearsOnIslandValue = timeState:WaitForChild("YearsOnIsland")
 	local cycleProgressValue = timeState:WaitForChild("CycleProgress")
 
 	local root = Instance.new("Frame")
@@ -58,10 +58,10 @@ local function buildHUD()
 	topRow.Parent = root
 
 	local ageLabel = Instance.new("TextLabel")
-	ageLabel.Name = "AgeLabel"
+	ageLabel.Name = "YearsOnIslandLabel"
 	ageLabel.Size = UDim2.new(1, 0, 1, 0)
 	ageLabel.BackgroundTransparency = 1
-	ageLabel.Text = tostring(ageValue.Value) .. " ANS"
+	ageLabel.Text = "ANNÉE " .. tostring(yearsOnIslandValue.Value)
 	ageLabel.TextColor3 = Color3.fromRGB(245, 248, 252)
 	ageLabel.TextXAlignment = Enum.TextXAlignment.Right
 	ageLabel.TextYAlignment = Enum.TextYAlignment.Center
@@ -132,12 +132,12 @@ local function buildHUD()
 	rightIcon.TextSize = 12
 	rightIcon.Parent = cycleRow
 
-	local lastAge = ageValue.Value
+	local lastYearsOnIsland = yearsOnIslandValue.Value
 
 	local function updateAgeAppearance()
-		ageLabel.Text = tostring(ageValue.Value) .. " ANS"
+		ageLabel.Text = "ANNÉE " .. tostring(yearsOnIslandValue.Value)
 
-		if ageValue.Value ~= lastAge then
+		if yearsOnIslandValue.Value ~= lastYearsOnIsland then
 			local tween = TweenService:Create(
 				ageScale,
 				TweenInfo.new(0.22, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
@@ -159,7 +159,7 @@ local function buildHUD()
 			end)
 		end
 
-		lastAge = ageValue.Value
+		lastYearsOnIsland = yearsOnIslandValue.Value
 	end
 
 	local function updateCycleIndicator()
@@ -186,7 +186,7 @@ local function buildHUD()
 	updateAgeAppearance()
 	updateCycleIndicator()
 
-	ageValue.Changed:Connect(updateAgeAppearance)
+	yearsOnIslandValue.Changed:Connect(updateAgeAppearance)
 	cycleProgressValue.Changed:Connect(updateCycleIndicator)
 end
 

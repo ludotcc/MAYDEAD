@@ -6,7 +6,9 @@ local TimeConfig = require(SharedFolder:WaitForChild("Config"):WaitForChild("Tim
 
 local TimeService = {}
 
-local STARTING_AGE = 10
+-- Age remains the legacy persisted source of truth for schema V1 worlds.
+-- Player-facing years are derived from it without rewriting existing saves.
+local STARTING_AGE = TimeConfig.LEGACY_AGE_OFFSET
 
 local DAY_START_HOUR = 6
 local NIGHT_START_HOUR = 18
@@ -33,6 +35,14 @@ if not ageValue then
 	ageValue.Parent = timeFolder
 end
 
+local yearsOnIslandValue = timeFolder:FindFirstChild("YearsOnIsland")
+
+if not yearsOnIslandValue then
+	yearsOnIslandValue = Instance.new("IntValue")
+	yearsOnIslandValue.Name = "YearsOnIsland"
+	yearsOnIslandValue.Parent = timeFolder
+end
+
 local periodValue = timeFolder:FindFirstChild("Period")
 
 if not periodValue then
@@ -52,6 +62,7 @@ end
 local function setAge(age: number)
 	currentAge = age
 	ageValue.Value = age
+	yearsOnIslandValue.Value = age - TimeConfig.LEGACY_AGE_OFFSET
 end
 
 local function setPeriod(periodName: string)
@@ -79,12 +90,20 @@ function TimeService:GetAge(): number
 	return currentAge
 end
 
+function TimeService:GetYearsOnIsland(): number
+	return currentAge - TimeConfig.LEGACY_AGE_OFFSET
+end
+
 function TimeService:GetPeriod(): string
 	return periodValue.Value
 end
 
 function TimeService:GetPersistentState()
-	return {Age = currentAge, CycleProgress = cycleProgressValue.Value}
+	return {
+		Age = currentAge,
+		CycleProgress = cycleProgressValue.Value,
+		CycleTimingVersion = TimeConfig.CYCLE_TIMING_VERSION,
+	}
 end
 
 function TimeService:RestorePersistentState(state)
@@ -94,8 +113,21 @@ function TimeService:RestorePersistentState(state)
 	then
 		return false
 	end
+	local progress = state.CycleProgress
+	if state.CycleTimingVersion == nil then
+		local legacyCycleDuration = TimeConfig.LEGACY_DAY_DURATION + TimeConfig.NIGHT_DURATION
+		local legacyElapsed = progress * legacyCycleDuration
+		if legacyElapsed < TimeConfig.LEGACY_DAY_DURATION then
+			progress = legacyElapsed / CYCLE_DURATION
+		else
+			local elapsedNight = legacyElapsed - TimeConfig.LEGACY_DAY_DURATION
+			progress = (TimeConfig.DAY_DURATION + elapsedNight) / CYCLE_DURATION
+		end
+	elseif state.CycleTimingVersion ~= TimeConfig.CYCLE_TIMING_VERSION then
+		return false
+	end
 	setAge(state.Age)
-	applyProgress(state.CycleProgress)
+	applyProgress(progress)
 	return true
 end
 

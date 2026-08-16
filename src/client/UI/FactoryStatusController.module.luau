@@ -14,6 +14,11 @@ local finalObjectiveCompleted = ReplicatedStorage:WaitForChild("FinalObjectiveCo
 local player = Players.LocalPlayer
 local controller = {Started = false, Machine = nil}
 
+local function formatYears(years)
+	if typeof(years) ~= "number" then return "? ANNÉES" end
+	return tostring(years) .. (years == 1 and " ANNÉE" or " ANNÉES")
+end
+
 local ITEM_NAMES = {
 	MetalWaste = "DÉCHET MÉTAL", PlasticWaste = "DÉCHET PLASTIQUE", WasteBag = "SAC DE DÉCHETS",
 	MetalBlock = "BLOC DE MÉTAL", PlasticBlock = "BLOC DE PLASTIQUE",
@@ -135,9 +140,9 @@ function controller:Start()
 		self.Assemble.Active = true; self.Assemble.AutoButtonColor = true; self.Assemble.Text = "CONTINUER À JOUER"
 		self.Title.Text = "OBJECTIF TERMINÉ"
 		self.State.Text = "VOUS AVEZ CONSTRUIT LE NAVAL SEAPLANE"
-		self.Item.Text = "ÉVASION RÉUSSIE  •  ÂGE " .. tostring(state.Age or "?")
+		self.Item.Text = "ÉVASION RÉUSSIE  •  " .. formatYears(state.EscapeYearsOnIsland or state.YearsOnIsland)
 		self.Progress.Text = "Vous pouvez continuer à vivre, construire et explorer ce monde."
-		self.Time.Text = "RECORD DE LONGÉVITÉ  •  ÂGE " .. tostring(state.LongevityAge or state.Age or "?")
+		self.Time.Text = "LONGÉVITÉ  •  " .. formatYears(state.LongevityYearsOnIsland or state.YearsOnIsland)
 		self.Queue.Visible = false; self.Metal.Visible = false; self.Plastic.Visible = false
 	end)
 	UserInputService.InputBegan:Connect(function(input, processed)

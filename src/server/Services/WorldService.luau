@@ -2,6 +2,7 @@ local Players = game:GetService("Players")
 local HttpService = game:GetService("HttpService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Config = require(ReplicatedStorage.Shared.Config.PersistenceConfig)
+local TimeConfig = require(ReplicatedStorage.Shared.Config.TimeConfig)
 local DataService = require(script.Parent.DataService)
 local SessionService = require(script.Parent.SessionService)
 local InventoryService = require(script.Parent.InventoryService)
@@ -22,6 +23,11 @@ local WorldService = {
 }
 
 local CRASH_MODEL_NAME = "Crash_Avion"
+
+local function legacyAgeToYears(age)
+	if typeof(age) ~= "number" then return 0 end
+	return math.max(0, math.floor(age) - TimeConfig.LEGACY_AGE_OFFSET)
+end
 
 local function applyCrashIntroEffects(introCompleted)
 	local crashModel = workspace:FindFirstChild(CRASH_MODEL_NAME)
@@ -77,8 +83,8 @@ local function newWorld(worldId, ownerUserId, ownerSlot, maxPlayers)
 		SchemaVersion = Config.SCHEMA_VERSION, WorldId = worldId, OwnerUserId = ownerUserId,
 		OwnerSlot = ownerSlot, DisplayName = "MONDE " .. tostring(ownerSlot), MaxPlayers = maxPlayers,
 		AuthorizedMembers = {}, CreatedAt = now, UpdatedAt = now,
-		Time = {Age = 10, CycleProgress = 0}, PlayerStates = {},
-		WorldState = {CrashIntroCompleted = false, NavalSeaplaneCompleted = false, FinalPlaneSpawned = false, EscapeAge = nil, LongevityAge = 10}, SessionLock = nil,
+		Time = {Age = TimeConfig.LEGACY_AGE_OFFSET, CycleProgress = 0, CycleTimingVersion = TimeConfig.CYCLE_TIMING_VERSION}, PlayerStates = {},
+		WorldState = {CrashIntroCompleted = false, NavalSeaplaneCompleted = false, FinalPlaneSpawned = false, EscapeAge = nil, LongevityAge = TimeConfig.LEGACY_AGE_OFFSET}, SessionLock = nil,
 	}
 end
 
@@ -118,7 +124,7 @@ function WorldService:_migrate(data)
 	end
 	if data.WorldState.NavalSeaplaneCompleted == nil then data.WorldState.NavalSeaplaneCompleted = false end
 	if data.WorldState.FinalPlaneSpawned == nil then data.WorldState.FinalPlaneSpawned = false end
-	if data.WorldState.LongevityAge == nil then data.WorldState.LongevityAge = data.Time.Age or 10 end
+	if data.WorldState.LongevityAge == nil then data.WorldState.LongevityAge = data.Time.Age or TimeConfig.LEGACY_AGE_OFFSET end
 	if typeof(data.WorldState.NavalSeaplaneCompleted) ~= "boolean" or typeof(data.WorldState.FinalPlaneSpawned) ~= "boolean"
 		or typeof(data.WorldState.LongevityAge) ~= "number" then return nil, "InvalidWorldData" end
 	if typeof(data.DisplayName) ~= "string" or data.DisplayName == "" then
@@ -158,7 +164,7 @@ function WorldService:GetOwnerSlots(userId)
 				slots[slot] = {
 				WorldId = data.WorldId,
 				DisplayName = typeof(data.DisplayName) == "string" and data.DisplayName or ("MONDE " .. tostring(slot)),
-				Age = data.Time and data.Time.Age or 10,
+				YearsOnIsland = legacyAgeToYears(data.Time and data.Time.Age),
 					MaxPlayers = data.MaxPlayers,
 					MemberCount = memberCount(data),
 			}
@@ -177,7 +183,7 @@ function WorldService:GetJoinedWorlds(userId)
 			and data.OwnerUserId ~= userId and (data.AuthorizedMembers or {})[tostring(userId)] == true
 		then
 			table.insert(joined, {WorldId = worldId, DisplayName = data.DisplayName, OwnerUserId = data.OwnerUserId,
-				MaxPlayers = data.MaxPlayers, MemberCount = memberCount(data), Age = data.Time and data.Time.Age or 10,
+				MaxPlayers = data.MaxPlayers, MemberCount = memberCount(data), YearsOnIsland = legacyAgeToYears(data.Time and data.Time.Age),
 				JoinedAt = entry.JoinedAt or entry.ReservedAt or 0,
 				Active = data.SessionLock ~= nil and (data.SessionLock.ExpiresAt or 0) > os.time()})
 			joinedById[worldId] = true
@@ -194,7 +200,7 @@ function WorldService:GetJoinedWorlds(userId)
 			DataService:RepairMemberIndexWorld(userId, worldId, data)
 			if not joinedById[worldId] then
 				table.insert(joined, {WorldId = worldId, DisplayName = data.DisplayName, OwnerUserId = data.OwnerUserId,
-					MaxPlayers = data.MaxPlayers, MemberCount = memberCount(data), Age = data.Time and data.Time.Age or 10,
+					MaxPlayers = data.MaxPlayers, MemberCount = memberCount(data), YearsOnIsland = legacyAgeToYears(data.Time and data.Time.Age),
 					JoinedAt = invite.CreatedAt or 0,
 					Active = data.SessionLock ~= nil and (data.SessionLock.ExpiresAt or 0) > os.time()})
 				joinedById[worldId] = true
@@ -402,7 +408,7 @@ function WorldService:Save(releaseLock, reason)
 	local callSucceeded, saved, saveError = pcall(function()
 		for player in pairs(self._world._Members or {}) do self:CapturePlayer(player) end
 		self._world.Time = TimeService:GetPersistentState()
-		self._world.WorldState.LongevityAge = math.max(self._world.WorldState.LongevityAge or 10, self._world.Time.Age)
+		self._world.WorldState.LongevityAge = math.max(self._world.WorldState.LongevityAge or TimeConfig.LEGACY_AGE_OFFSET, self._world.Time.Age)
 		local structures, structuresError = BuildingService:GetPersistentSnapshot()
 		if not structures then
 			return false, "StructureSnapshotFailed:" .. tostring(structuresError)
@@ -470,7 +476,11 @@ function WorldService:CompleteNavalSeaplane()
 	self._world.WorldState.FinalPlaneSpawned = true
 	self._world.WorldState.EscapeAge = self._world.WorldState.EscapeAge and math.min(self._world.WorldState.EscapeAge, age) or age
 	self._world.WorldState.LongevityAge = math.max(self._world.WorldState.LongevityAge or age, age)
-	finalObjectiveCompleted:FireAllClients({Age = age, EscapeAge = self._world.WorldState.EscapeAge, LongevityAge = self._world.WorldState.LongevityAge})
+	finalObjectiveCompleted:FireAllClients({
+		YearsOnIsland = legacyAgeToYears(age),
+		EscapeYearsOnIsland = legacyAgeToYears(self._world.WorldState.EscapeAge),
+		LongevityYearsOnIsland = legacyAgeToYears(self._world.WorldState.LongevityAge),
+	})
 	return true
 end
 function WorldService:Close(reason)
