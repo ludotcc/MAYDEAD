@@ -377,6 +377,7 @@ function controller:_build()
 	list.CanvasSize = UDim2.new()
 	list.Parent = panel
 	local layout = Instance.new("UIListLayout")
+	layout.SortOrder = Enum.SortOrder.LayoutOrder
 	layout.Padding = UDim.new(0, 8)
 	layout.Parent = list
 	self.List = list
