@@ -433,7 +433,7 @@ Année de départ :
 ANNÉE 0
 ```
 
-**Implémentation de production : À TESTER STUDIO / ROBLOX PLAYER**
+**Implémentation de production : TERMINÉ — VALIDÉ STUDIO**
 
 `TimeService` est autoritaire. Il conserve le champ persistant legacy
 `Age` du schéma V1 et expose `YearsOnIsland = Age - 10`. Pour un snapshot
@@ -1978,7 +1978,7 @@ Statut : `TERMINÉ` — validation Studio confirmée par le développeur
 
 Statut : `TERMINÉ` — `VALIDÉ STUDIO`
 
-Validation officielle historique : World Persistence V3 a été validée en Roblox Studio par le développeur. Cette validation couvre le monde persistant, le champ legacy `Age` et la progression, la restauration après reconnexion, l'inventaire joueur et les QuickSlots sans perte lors des différents scénarios de sortie/reconnexion testés. La nouvelle conversion visuelle YearsOnIsland reste à valider en Studio.
+Validation officielle : World Persistence V3 et la compatibilité YearsOnIsland ont été validées en Roblox Studio par le Game Director. Cette validation couvre le monde persistant, le champ legacy `Age`, la progression, la restauration après reconnexion, l'inventaire joueur et les QuickSlots sans perte.
 
 - `WorldState.StructuresVersion` passe à 2 tout en conservant la lecture des snapshots V2/version 1. Chaque structure stateful porte désormais son `State` dans la même entrée que sa géométrie et son `StructureId`.
 - `StationService` reste propriétaire des données métier et expose une capture/restauration validée. Les slots sont remplacés intégralement au chargement, jamais fusionnés, afin d'éviter les duplications.
@@ -2450,13 +2450,13 @@ Statut : `À TESTER STUDIO`
 
 ## YEARS ON ISLAND + CYCLE 17 MINUTES
 
-Statut : `À TESTER STUDIO + ROBLOX PLAYER`
+Statut : `TERMINÉ — VALIDÉ STUDIO`
 
 - Le gameplay affiche désormais `ANNÉE 0` pour un monde neuf. Un cycle complet de 17 minutes, composé de 13 minutes de jour et 4 minutes de nuit, ajoute une année passée sur l'archipel.
 - La compatibilité production ne modifie ni `SchemaVersion = 1`, ni namespace, ni clé DataStore. `Time.Age`, `WorldState.EscapeAge` et `WorldState.LongevityAge` restent les champs persistants historiques et l'unique source serveur; les valeurs joueur sont dérivées avec l'offset 10.
 - Un ancien monde `Age = 17` est donc présenté comme `YearsOnIsland = 7`. Un snapshot sans `CycleTimingVersion` est converti une seule fois : les secondes écoulées dans le jour ou la nuit sont conservées, puis le marqueur additif `CycleTimingVersion = 2` empêche toute reconversion ultérieure.
 - `TimeState.YearsOnIsland`, les cartes de mondes, le panneau temporel de l'inventaire et le message de fin affichent la nouvelle sémantique. Les records d'évasion minimum et de longévité maximum restent stockés sans réécriture, puis sont convertis uniquement pour l'affichage.
-- Validation statique et build Rojo réussis. Tests Studio/Roblox Player encore requis sur monde neuf, cycle complet, sauvegarde/rechargement, copie représentative d'un monde production historique, UI et fin de partie.
+- Validation Game Director réussie dans Roblox Studio : monde neuf, monde historique, cycle 13 + 4 minutes, incrément annuel, sauvegarde/rechargement, absence de reconversion répétée, constructions, inventaire, progression, UI, évasion et exposition des records.
 - Le template commun des trois cartes utilise un conteneur d'actions élargi à 32 % avec un espacement fixe de 6 px et trois hitboxes uniformes de 38×38 px.
 - L'ordre commun est imposé par `LayoutOrder` : Rename 1, Members 2, Delete 3. Rename utilise l'icône Roblox compose/crayon, Members l'icône groupe et Delete conserve la croix rouge.
 - Les callbacks Rename, Members et Delete, le background, la navigation, les permissions, les mondes et toute persistence restent inchangés.
@@ -2544,3 +2544,48 @@ Statut : `À TESTER STUDIO + ROBLOX PLAYER`
 - Après confirmation serveur, le client retire optimistement uniquement le WorldId confirmé de la copie locale de son slot, conserve toutes les autres cartes, puis appelle obligatoirement `_refreshWorlds`. Si ce refresh échoue, l'état fiable `A / vide / C` reste affiché; un échec Delete ne modifie rien.
 - Les logs Studio `[MAYDEAD][WORLD_UI][DELETE]` couvrent Request/Success avec WorldId, slot et compteur non sensible; `[MAYDEAD][WORLD_UI][REFRESH]` couvre Success avec les trois slots ou Failure avec préservation explicite du snapshot.
 - Namespace DataStore, schéma, WorldId, OwnerSlot, AuthorizedMembers, structures, inventaires, progression, animaux, véhicules et logique Mondes rejoints restent inchangés. Aucune migration, purge, reconstruction d'index ou normalisation de données existantes n'est ajoutée.
+
+------------------------------------------------------------------------
+
+# CLÔTURE DU GRAND AUDIT PRODUCTION
+
+Statut : `AUDIT TERMINÉ — PRODUCTION PROTÉGÉE`
+
+## État validé
+
+- Git : checkpoint complet, historique linéaire et `main` synchronisée avec `origin/main`, sans force push.
+- Session/DataStore : renouvellement de lease distinguant `Confirmed`, `Uncertain`, `Lost` et `Stopped`; une indisponibilité DataStore n'est pas assimilée à une perte confirmée et les sauvegardes restent fenced.
+- État monde : `GetState` protégé, requêtes simultanées contrôlées et cache serveur court invalidé lors des changements pertinents.
+- Inventaire : sauvegarde finale des Tools corrigée, 20 slots principaux + 8 QuickSlots persistants, whitelist et budgets serveur sur `InventoryRequest`, avec limitation dédiée de `RequestState`.
+- Stations : transferts `SINGLE`, `FULL_STACK` et `HALF_STACK`, drag/clic long Campfire corrigé, `StationRequest` validé et limité côté serveur.
+- Pêche : payloads et fréquence de `FishingRequest` validés; chemin tactile et UI mobile validés.
+- Cheetah : `MountInput` valide le rider et les vecteurs finis, rejette NaN/infini, limite la fréquence et évite la réplication complète par input. `NOURRIR`, `DESCENDRE` et `SPRINT` tactiles sont validés sans changer les chemins PC.
+- Factory : `FinalFactoryRequest` limite ses actions, valide la machine et applique le cooldown Assemble.
+- Mobile/tablette : le chantier P1/P2 couvert par `INPUT_CONTROLS.md` est validé Studio par le Game Director; les contrôles encore marqués `À TESTER` n'étaient pas inclus dans cette validation.
+- Production logs : bruit diagnostic réduit, avertissements critiques conservés et `BalanceConfig.BALANCE_DEBUG = false`; aucun asset supprimé.
+- Temps : YearsOnIsland, cycle 13 + 4 minutes, persistance legacy et affichages ont été validés par le Game Director.
+
+## Travaux réellement ouverts
+
+### P0
+
+Aucun P0 connu identifié par cet audit.
+
+### P1
+
+- Valider les mondes privés partagés en conditions Studio/Roblox Player multijoueur et sur une copie représentative production : routage propriétaire absent, fencing concurrent, invitations, révocations et réparation d'index restent explicitement ouverts.
+- Valider le Boat et le Naval Seaplane avec les assets Studio réels : pilotage, physique, placement aquatique, deux joueurs et reload intermédiaire restent explicitement ouverts.
+- Exécuter les scénarios DataStore multiserveur encore documentés : lease stale, autosave concurrent et échecs simulés. Les protections existent, mais ces validations externes ne sont pas remplacées par l'audit statique.
+
+### P2
+
+- Terminer les validations visuelles encore marquées `À TESTER` dans ce document, notamment certains écrans responsive, HUD et polish d'assets.
+- Réduire progressivement les diagnostics Studio restants lorsque leurs chantiers visuels seront validés.
+
+### FUTUR
+
+- Poursuivre les systèmes et extensions explicitement conservés dans `ROADMAP.md` : contenu, progression avancée, records globaux, localisation, monétisation non Pay-to-Win et améliorations post-publication.
+
+## Assets historiques
+
+Les noms `Tree_Test`, `Stone_Test`, `MetalRock_Test`, `Crystal_Test`, le fichier non suivi `MAYDEAD-cheetah-v2.rbxlx` et le dossier non suivi `assets/` sont conservés. Un nom contenant `Test`, `_Test`, `Debug`, `Prototype`, `Old` ou `Temp` n'est jamais une preuve suffisante d'inutilisation; code et DataModel Studio doivent être vérifiés avant suppression.

@@ -981,3 +981,11 @@ Protect:
 -   development speed.
 
 Every technical decision should support those goals.
+
+## 45. HISTORICAL ASSET SAFETY
+
+A name containing `Test`, `_Test`, `Debug`, `Prototype`, `Old`, or `Temp` is
+never sufficient evidence that a MAYDEAD asset is unused. Check both code
+references and the Roblox Studio DataModel before deletion. Known names such
+as `Tree_Test`, `Stone_Test`, `MetalRock_Test`, and `Crystal_Test` must not be
+renamed or removed merely because of their names.

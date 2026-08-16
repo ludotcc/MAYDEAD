@@ -894,6 +894,16 @@ Particulièrement pour :
 
 ## 55. RÈGLE FINALE
 
+### Compatibilité persistante et assets historiques
+
+- Les identifiants persistants legacy (`Age`, `EscapeAge`, `LongevityAge`)
+  ne sont jamais renommés ou migrés pour une raison esthétique sans stratégie
+  explicitement validée sur des sauvegardes représentatives.
+- Un nom contenant `Test`, `_Test`, `Debug`, `Prototype`, `Old` ou `Temp` ne
+  prouve jamais qu'un asset MAYDEAD est inutilisé. Avant toute suppression,
+  vérifier ses références dans le code et son usage dans le DataModel Roblox
+  Studio.
+
 La priorité n'est pas d'écrire le plus de code possible.
 
 La priorité est de construire :

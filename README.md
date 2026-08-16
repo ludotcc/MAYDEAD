@@ -15,3 +15,13 @@ rojo serve
 ```
 
 For more help, check out [the Rojo documentation](https://rojo.space/docs).
+
+## Documentation officielle
+
+- [Game Design](docs/GAME_DESIGN.md)
+- [Architecture](docs/ARCHITECTURE.md)
+- [Règles de développement](docs/DEVELOPMENT_RULES.md)
+- [Roadmap](docs/ROADMAP.md)
+- [État réel du projet](docs/PROJECT_STATUS.md)
+- [Contrôles PC, tablette et téléphone](docs/INPUT_CONTROLS.md)
+- [Instructions des agents](AGENTS.md)

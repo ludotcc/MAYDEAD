@@ -1748,6 +1748,12 @@ En cas de conflit :
 
 `docs/DEVELOPMENT_RULES.md` définit la manière de travailler.
 
+### Contrôles joueur
+
+`docs/INPUT_CONTROLS.md` est la source de vérité des chemins PC, tablette et
+téléphone. Une évolution d'input ou d'UI interactive doit préserver les
+validations serveur et mettre à jour cette matrice.
+
 ### Instructions Codex
 
 `AGENTS.md` résume les instructions impératives.

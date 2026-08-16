@@ -101,17 +101,17 @@ décrit le contrat, sans devenir une seconde configuration.
 | Nage | Mouvement Humanoid natif | Contrôles natifs | Contrôles natifs | Roblox Humanoid | NATIF ROBLOX |
 | Interaction monde | Touche du `ProximityPrompt` | Bouton de prompt | Bouton de prompt | Services d'interaction | NATIF ROBLOX |
 | Récolte / attaque avec outil | `Tool.Activated`, souris | Activation outil et ciblage tactile | Idem | `HarvestController` | À TESTER EN STUDIO |
-| Ouvrir l'inventaire | `E` | Bouton inventaire | Bouton inventaire | `InventoryController` | À TESTER EN STUDIO |
-| Hotbar | Touches `1` à `8`, clic | Tap sur slot | Tap sur slot | `InventoryController` | À TESTER EN STUDIO |
-| Sélection inventaire | Clic | Tap | Tap | `InventoryController` | À TESTER EN STUDIO |
-| Drag / merge / swap | Drag souris, seuil 6 px | Drag tactile, seuil 14 px | Idem | `InventoryController`, `InventoryConfig` | À TESTER EN STUDIO |
-| Main ↔ Quick | Drag | Drag tactile | Drag tactile | `InventoryController` | À TESTER EN STUDIO |
-| Utiliser / consommer | `F` ou action UI | Bouton contextuel | Bouton contextuel | `InventoryController`, `DrinkController` | À TESTER EN STUDIO |
-| Station : `SINGLE` | Drag vers destination | Drag tactile | Drag tactile | `StationController`, `StationRequest` | À TESTER EN STUDIO |
-| Station : `FULL_STACK` | Shift + clic gauche ou clic gauche long | Appui long 0,5 s | Appui long 0,5 s | `StationController`, `InventoryConfig` | À TESTER EN STUDIO |
-| Station : `HALF_STACK` | Shift + clic droit | Tap bref puis `½ PILE` | Tap bref puis `½ PILE` | `StationController`, `StationRequest` | À TESTER EN STUDIO |
-| Campfire : transferts | Règles station | Règles station | Règles station | `StationController` | À TESTER EN STUDIO |
-| CraftingTable : stockage | Règles station | Règles station | Règles station | `StationController` | À TESTER EN STUDIO |
+| Ouvrir l'inventaire | `E` | Bouton inventaire | Bouton inventaire | `InventoryController` | VALIDÉ |
+| Hotbar | Touches `1` à `8`, clic | Tap sur slot | Tap sur slot | `InventoryController` | VALIDÉ |
+| Sélection inventaire | Clic | Tap | Tap | `InventoryController` | VALIDÉ |
+| Drag / merge / swap | Drag souris, seuil 6 px | Drag tactile, seuil 14 px | Idem | `InventoryController`, `InventoryConfig` | VALIDÉ |
+| Main ↔ Quick | Drag | Drag tactile | Drag tactile | `InventoryController` | VALIDÉ |
+| Utiliser / consommer | `F` ou action UI | Bouton contextuel | Bouton contextuel | `InventoryController`, `DrinkController` | VALIDÉ |
+| Station : `SINGLE` | Drag vers destination | Drag tactile | Drag tactile | `StationController`, `StationRequest` | VALIDÉ |
+| Station : `FULL_STACK` | Shift + clic gauche ou clic gauche long | Appui long 0,5 s | Appui long 0,5 s | `StationController`, `InventoryConfig` | VALIDÉ |
+| Station : `HALF_STACK` | Shift + clic droit | Tap bref puis `½ PILE` | Tap bref puis `½ PILE` | `StationController`, `StationRequest` | VALIDÉ |
+| Campfire : transferts | Règles station | Règles station | Règles station | `StationController` | VALIDÉ |
+| CraftingTable : stockage | Règles station | Règles station | Règles station | `StationController` | VALIDÉ |
 | Choisir/crafter une recette | Clic UI | Bouton `Activated` | Bouton `Activated` | `CraftingController` | À TESTER EN STUDIO |
 | Construction : placer | Clic gauche | `PLACER` | `PLACER` | `PlacementController` | À TESTER EN STUDIO |
 | Construction : tourner | `R` | `TOURNER` | `TOURNER` | `PlacementController` | À TESTER EN STUDIO |
@@ -122,7 +122,7 @@ décrit le contrat, sans devenir une seconde configuration.
 | Cheetah : Mount | Bouton UI | Bouton UI | Bouton UI | `CheetahCompanionController` | À TESTER EN STUDIO |
 | Cheetah : Dismount | `E` | `DESCENDRE` | `DESCENDRE` | `CheetahCompanionController` | VALIDÉ |
 | Cheetah : direction montée | WASD / flèches | Joystick (`Humanoid.MoveDirection`) | Idem | `CheetahCompanionController` | À TESTER EN STUDIO |
-| Cheetah : sprint monté | Maintenir Shift gauche | Maintenir `SPRINT` | Maintenir `SPRINT` | `CheetahCompanionController`, `MountInput` | À TESTER EN STUDIO |
+| Cheetah : sprint monté | Maintenir Shift gauche | Maintenir `SPRINT` | Maintenir `SPRINT` | `CheetahCompanionController`, `MountInput` | VALIDÉ |
 | Cheetah : saut monté | Clic gauche | JumpButton via `JumpRequest` | Idem | `CheetahCompanionController` | À TESTER EN STUDIO |
 | Cheetah : apprivoisement | RawMeat sélectionnée puis clic gauche pour déposer | `NOURRIR` contextuel | Idem | `RawMeatDropController`, `WorldDropRequest` | VALIDÉ |
 | Factory : ouvrir | Interaction monde | Prompt tactile | Prompt tactile | Factory / station | NATIF ROBLOX |

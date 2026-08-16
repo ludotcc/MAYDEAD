@@ -178,7 +178,7 @@ Créer le premier système fondamental visible de MAYDEAD.
 -   [x] Piloter `Lighting` depuis le serveur.
 -   [x] Créer transitions jour/nuit.
 -   [x] Afficher l'année sur l'archipel dans l'inventaire.
--   [ ] Tester plusieurs cycles.
+-   [x] Tester le nouveau cycle et son incrément annuel.
 -   [ ] Vérifier qu'un joueur rejoignant reçoit l'année correcte.
 
 ## Validation
@@ -663,7 +663,7 @@ Transformer le prototype en vraie partie persistante.
 -   [ ] migrations.
 -   [x] restauration constructions — géométrie, identifiants, rotation, relations de snapping et isolation `VALIDÉS STUDIO`.
 -   [x] restauration coffres — Chest 30 slots et CraftingTable 12 slots `VALIDÉS STUDIO`.
--   [x] restauration du champ historique `Age` et de la progression — `VALIDÉE STUDIO` avant le changement d'affichage YearsOnIsland.
+-   [x] restauration du champ historique `Age`, conversion YearsOnIsland et progression — `VALIDÉES STUDIO`.
 -   [x] restauration progression — monde et GardenPlot sans progression hors ligne `VALIDÉE STUDIO`.
 
 ## Validation
@@ -1725,6 +1725,28 @@ Statut : `À TESTER STUDIO / ROBLOX PLAYER`.
 - [x] continuation après objectif et records monde ;
 - [ ] audit des assets et pilotage dans Roblox Studio ;
 - [ ] tests multijoueur, reload intermédiaire et Roblox Player production.
+
+## CLÔTURE AUDIT PRODUCTION
+
+### TERMINÉ / VALIDÉ
+
+- sécurisation Session/DataStore, World GetState, InventoryRequest, StationRequest, FishingRequest, MountInput et FinalFactoryRequest ;
+- correctifs de persistance Tools/inventaire et transferts Campfire ;
+- contrôles mobiles P1/P2 documentés comme `VALIDÉ` dans `INPUT_CONTROLS.md` ;
+- réduction des logs production sans suppression d'asset ;
+- YearsOnIsland et cycle 17 minutes, y compris compatibilité des sauvegardes historiques.
+
+### OUVERT
+
+- validations multijoueur/production des mondes privés partagés et scénarios DataStore concurrents ;
+- validation finale Boat/Naval Seaplane avec les assets Studio réels, deux joueurs et reload ;
+- validations visuelles et responsive encore explicitement marquées `À TESTER`.
+
+### FUTUR
+
+Les fonctionnalités non développées des chantiers précédents restent dans la
+roadmap comme backlog futur; leur absence ne rouvre pas le grand audit de
+sécurité production.
 
 **MAYDEAD --- Roadmap V1**
 
