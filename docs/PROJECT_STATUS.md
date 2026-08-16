@@ -67,10 +67,10 @@ Le joueur survit après un crash aérien sur un archipel isolé.
 L'objectif principal à long terme est de construire un nouvel hydravion
 pour quitter l'archipel.
 
-La performance est mesurée principalement par l'**Âge** du personnage au
-moment de l'évasion.
+La performance est mesurée principalement par le nombre d'**années passées
+sur l'archipel** au moment de l'évasion.
 
-Le joueur commence à l'Âge 10.
+Le monde commence à l'Année 0.
 
 Un cycle complet jour/nuit représente une année.
 
@@ -92,9 +92,9 @@ commencé.
 
 ## Fonctionnalités actuellement implémentées
 
-- Service serveur de temps autoritaire avec Âge, période Jour/Nuit et
+- Service serveur de temps autoritaire avec YearsOnIsland, période Jour/Nuit et
   progression du cycle.
-- Premier HUD officiel MAYDEAD affichant l'âge du personnage, la période
+- Premier HUD officiel MAYDEAD affichant l'année sur l'archipel, la période
   actuelle et un indicateur visuel du cycle.
 - Service serveur de survie autoritaire pour Santé, Faim, Soif, Énergie
   et apnée, avec dégâts progressifs de noyade.
@@ -416,9 +416,9 @@ La décision sera prise système par système.
 Référence actuelle :
 
 ``` text
-Jour  : 10 minutes
+Jour  : 13 minutes
 Nuit  : 4 minutes
-Total : 14 minutes
+Total : 17 minutes
 ```
 
 Un cycle complet représente :
@@ -427,17 +427,18 @@ Un cycle complet représente :
 +1 année
 ```
 
-Âge de départ :
+Année de départ :
 
 ``` text
-10 ans
+ANNÉE 0
 ```
 
-**Implémentation de production : non commencée / à reprendre
-proprement**
+**Implémentation de production : À TESTER STUDIO / ROBLOX PLAYER**
 
-Des tests antérieurs de cycle jour/nuit ont été réalisés, mais le futur
-système officiel doit être intégré à l'architecture MAYDEAD.
+`TimeService` est autoritaire. Il conserve le champ persistant legacy
+`Age` du schéma V1 et expose `YearsOnIsland = Age - 10`. Pour un snapshot
+historique sans `CycleTimingVersion`, les secondes déjà écoulées et la phase
+Jour/Nuit sont préservées lors du passage 10 + 4 vers 13 + 4 minutes.
 
 ------------------------------------------------------------------------
 
@@ -1028,7 +1029,7 @@ Affichage principal :
 
 ``` text
 ÉVASION RÉUSSIE
-ÂGE XX
+XX ANNÉES
 ```
 
 Le joueur peut ensuite :
@@ -1056,7 +1057,7 @@ Classements séparés :
 Critère principal :
 
 ``` text
-Âge d'évasion le plus faible
+Nombre d'années d'évasion le plus faible
 ```
 
 Temps réel possible comme départage secondaire.
@@ -1164,7 +1165,7 @@ Direction privilégiée :
 Le First Playable sera atteint lorsque les systèmes fondamentaux
 suivants fonctionneront ensemble :
 
--   temps/âge ;
+-   temps/années sur l'archipel ;
 -   météo ;
 -   interactions ;
 -   inventaire ;
@@ -1277,7 +1278,7 @@ Une fois la documentation terminée :
 
 Premier système prévu :
 
-# TIME SERVICE + CYCLE JOUR/NUIT + ÂGE
+# TIME SERVICE + CYCLE JOUR/NUIT + YEARS ON ISLAND
 
 Puis :
 
@@ -1854,11 +1855,11 @@ Statut : `À TESTER`
 - `DataService` utilise des DataStores séparés DEV/PROD pour l'index propriétaire et les données de monde, avec retries et mutations sensibles via `UpdateAsync`.
 - Chaque slot propriétaire 1–3 référence un WorldId GUID indépendant. La création réserve d'abord le slot (`Creating`), crée le monde, puis finalise l'index (`Ready`) afin d'empêcher les doubles créations et l'écrasement d'un slot.
 - `SessionService` acquiert un lease de 120 secondes renouvelé toutes les 30 secondes. Le jeton de fencing réside dans la même entrée DataStore que le monde ; une sauvegarde provenant d'un serveur ayant perdu son lease est refusée atomiquement.
-- `WorldService` valide le schéma V1, restaure le temps/âge et remplace intégralement les 28 slots d'inventaire. Autosave toutes les 120 secondes, capture avant départ joueur et sauvegarde/libération ordonnée lors du dernier départ ou de `BindToClose`.
-- Données persistées : métadonnées du monde, propriétaire/slot, MaxPlayers, représentation des membres autorisés, âge/progression du cycle, inventaire et QuickSlots par UserId, plus géométrie/identité/snapping des constructions via World Persistence V2 `À TESTER`.
+- `WorldService` valide le schéma V1, restaure le temps historique compatible et remplace intégralement les 28 slots d'inventaire. Autosave toutes les 120 secondes, capture avant départ joueur et sauvegarde/libération ordonnée lors du dernier départ ou de `BindToClose`.
+- Données persistées : métadonnées du monde, propriétaire/slot, MaxPlayers, représentation des membres autorisés, champ legacy `Age`/progression du cycle, inventaire et QuickSlots par UserId, plus géométrie/identité/snapping des constructions via World Persistence V2 `À TESTER`.
 - Données volontairement non persistées faute de format ou règle suffisamment définis : survie, états internes des stations/coffres/campfire, occupation Camp, cultures GardenPlot, ressources naturelles et état de production Factory.
 - Un échec de chargement ne crée jamais de monde vide. Un échec de sauvegarde conserve l'état serveur et le lock jusqu'à une nouvelle tentative ou son expiration après crash.
-- Tests DataStore Studio et publiés obligatoires : création/reconnexion, inventaire, âge, double serveur, lease stale, double création, autosave concurrent et échecs simulés.
+- Tests DataStore Studio et publiés obligatoires : création/reconnexion, inventaire, YearsOnIsland, double serveur, lease stale, double création, autosave concurrent et échecs simulés.
 
 # UX / INTERACTIONS / RÉCOLTE / MONDES V1.1
 
@@ -1880,7 +1881,7 @@ Statut : `IMPLÉMENTÉ — À TESTER`
 
 - Le menu principal conserve son contrôleur et tous ses flux existants, mais adopte une composition cinématique plein écran sans grand panneau prototype : titre MAYDEAD renforcé, promesse survival, accents rouge/orange et action `JOUER` primaire.
 - Le background accepte désormais un asset configurable via `MainMenuVisualConfig.BACKGROUND_IMAGE_ID`, rendu avec `ScaleType.Crop`. Tant que la miniature officielle n'a pas d'asset Roblox publié, un fallback bleu nuit avec overlay, gradient et vignette légère garantit la lisibilité.
-- `VOS MONDES` utilise trois cards dark-glass distinctes avec hiérarchie `MONDE`, DisplayName, âge/capacité et bouton d'action. Les slots vides affichent `AUCUN MONDE` et `+ CRÉER UNE PARTIE`.
+- `VOS MONDES` utilise trois cards dark-glass distinctes avec hiérarchie `MONDE`, DisplayName, année/capacité et bouton d'action. Les slots vides affichent `AUCUN MONDE` et `+ CRÉER UNE PARTIE`.
 - Les interfaces de renommage et création partagent la même palette, des champs/boutons hiérarchisés, des états de focus et un compteur 0–28 pour le nom. La logique serveur, le filtrage et les appels réseau restent inchangés.
 - Le bouton gameplay devient `☰ MENU`, 112×46, placé dans la safe area en haut à droite avec fond sombre semi-transparent, ombre, bordure, hover et pressed state. Il ouvre toujours la confirmation sécurisée existante.
 - Le responsive utilise un `UIScale` piloté par le viewport, une grille à trois cards et `DeviceSafeInsets`. Cibles Studio à valider : 1920×1080, 1366×768, 2560×1440, 1280×800, tablette et téléphone paysage/portrait.
@@ -1892,7 +1893,7 @@ Statut : `À TESTER`
 
 - La palette V3 remplace le rouge principal par un ambre doux et un cyan désaturé sur une base graphite translucide. Le rouge est réservé aux erreurs et aux actions de suppression irréversibles.
 - Les actions importantes utilisent des `ImageLabel` alimentés par des textures Roblox centralisées dans `MainMenuVisualConfig.ICONS` : jouer, continuer, renommer, supprimer, retour, menu, confirmation et avertissement. Des fallbacks textuels non Unicode restent prévus si une texture manque.
-- Les cards mondes passent à une grille responsive scrollable : trois colonnes sur PC large, deux sur tablette et une liste verticale sur téléphone. Le DisplayName reste le titre, avec slot, âge/capacité et actions distinctes.
+- Les cards mondes passent à une grille responsive scrollable : trois colonnes sur PC large, deux sur tablette et une liste verticale sur téléphone. Le DisplayName reste le titre, avec slot, année/capacité et actions distinctes.
 - Le bouton gameplay `MENU` devient un contrôle graphite compact 104×42 avec icône, ombre, stroke et états hover/pressed. La modal de retour utilise l'ambre, jamais le rouge.
 - `DeleteWorld` ajoute une suppression propriétaire uniquement avec deux confirmations client, dont la saisie exacte de `SUPPRIMER`, plus une confirmation logique serveur, validation slot/WorldId et anti-spam.
 - La suppression est refusée lorsqu'une session est active ou qu'un lease non expiré existe. Une réservation de suppression atomique dans la clé monde bloque également toute nouvelle acquisition de lock pendant l'opération.
@@ -1906,7 +1907,7 @@ Statut : `À TESTER`
 
 - L'accent principal ambre de la V3 est remplacé par un bleu premium `#4C9DFF`, avec hover `#69AFFF` et cyan secondaire `#62C4D6`. Le rouge reste exclusivement réservé aux erreurs et à DeleteWorld.
 - L'accueil est plus compact et dense : promesse `SURVIE COOPÉRATIVE • MONDES PERSISTANTS`, CTA Jouer bleu plus fin, hiérarchie MAYDEAD renforcée et footer 1–6 joueurs.
-- Les cards utilisent des actions principales plus courtes, des icônes centralisées pour âge/joueurs/continuer et des contrôles ImageLabel pour renommer, supprimer, retour et menu. Le responsive V3 3 colonnes / 2+1 / liste verticale est conservé.
+- Les cards utilisent des actions principales plus courtes, des icônes centralisées pour année/joueurs/continuer et des contrôles ImageLabel pour renommer, supprimer, retour et menu. Le responsive V3 3 colonnes / 2+1 / liste verticale est conservé.
 - Cause du bug RenameWorld identifiée : `snapshot.SessionLock = releaseLock and nil or current.SessionLock` ne pouvait jamais produire `nil` en Lua. Lors d'un retour menu du dernier joueur, le lease restait donc persisté malgré l'effacement de l'état local ; RenameWorld refusait ensuite l'UpdateAsync avec un lock encore valide et l'erreur était réduite à `SaveFailed`.
 - `DataService:SaveWorld` utilise maintenant une branche explicite pour retirer réellement `SessionLock` lorsque `releaseLock == true`. Les vrais locks actifs continuent d'interdire le renommage.
 - `DataService:RenameWorld` conserve l'ancien DisplayName tant que l'UpdateAsync n'a pas réussi et remonte désormais des erreurs distinctes : `WorldNotFound`, `NotOwner`, `WorldDeleted`, `WorldBusy` ou `SaveFailed`. L'UI distingue également `InvalidWorldName` et `FilterFailed`.
@@ -1977,7 +1978,7 @@ Statut : `TERMINÉ` — validation Studio confirmée par le développeur
 
 Statut : `TERMINÉ` — `VALIDÉ STUDIO`
 
-Validation officielle : World Persistence V3 a été validée en Roblox Studio par le développeur. Cette validation couvre le monde persistant, l'âge et la progression, la restauration après reconnexion, l'inventaire joueur et les QuickSlots sans perte lors des différents scénarios de sortie/reconnexion testés.
+Validation officielle historique : World Persistence V3 a été validée en Roblox Studio par le développeur. Cette validation couvre le monde persistant, le champ legacy `Age` et la progression, la restauration après reconnexion, l'inventaire joueur et les QuickSlots sans perte lors des différents scénarios de sortie/reconnexion testés. La nouvelle conversion visuelle YearsOnIsland reste à valider en Studio.
 
 - `WorldState.StructuresVersion` passe à 2 tout en conservant la lecture des snapshots V2/version 1. Chaque structure stateful porte désormais son `State` dans la même entrée que sa géométrie et son `StructureId`.
 - `StationService` reste propriétaire des données métier et expose une capture/restauration validée. Les slots sont remplacés intégralement au chargement, jamais fusionnés, afin d'éviter les duplications.
@@ -2064,11 +2065,11 @@ Statut : `À TESTER STUDIO`
 - Les icônes mesurent 48 px et affichent un pourcentage secondaire compact. Sous le seuil critique existant, le pulse contrôlé, les toasts et la vignette existants restent actifs.
 - Oxygène conserve strictement son apparition sous l'eau et sa disparition différée. Assets, responsive, gameplay, Remotes et Persistence V3 restent inchangés.
 
-## Relocalisation UI progression journée / âge
+## Relocalisation UI progression journée / années sur l'archipel
 
 Statut : `À TESTER STUDIO`
 
-- Le composant jour/âge n'est plus un HUD permanent : il est monté dans l'inventaire personnel et suit toujours les valeurs répliquées `TimeState.Age` et `TimeState.CycleProgress`.
+- Le composant jour/année n'est plus un HUD permanent : il est monté dans l'inventaire personnel et suit les valeurs serveur `TimeState.YearsOnIsland` et `TimeState.CycleProgress`.
 - Il est masqué avec le contenu joueur lorsque la même fenêtre affiche le craft, une CraftingTable, un Campfire, un Chest ou une autre station.
 - La priorité d'interaction `E`, le bouton Inventaire tactile, le gameplay, l'autorité serveur, les Remotes et la persistance restent inchangés.
 
@@ -2096,7 +2097,7 @@ Statut : `À TESTER STUDIO`
 Statut : `À TESTER STUDIO`
 
 - Le menu principal utilise `rbxassetid://132491826416605` comme rendu plein écran et des hitboxes transparentes proportionnelles pour `JOUER`, `CLASSEMENT` et `QUITTER`. Seul `JOUER` déclenche une logique existante ; aucune mécanique de classement ou de fermeture Roblox n'est inventée.
-- `VOS MONDES` utilise `rbxassetid://130947862190730`. Les trois slots dynamiques existants restent reliés à la création, continuation, renommage, suppression, âge et capacité réels, dans les trois cadres visuels du background.
+- `VOS MONDES` utilise `rbxassetid://130947862190730`. Les trois slots dynamiques existants restent reliés à la création, continuation, renommage, suppression, année et capacité réelles, dans les trois cadres visuels du background.
 - L'unique hitbox `RETOUR` est placée en haut à droite ; aucun second bouton Retour inférieur n'est construit.
 - Cette première intégration réutilisait `SoundService.Secret Transmission (C)` ; le hotfix ci-dessous la remplace par la musique officielle actuelle sans créer de Sound.
 - WorldSessionService, WorldService, DataStores, limite de trois mondes et limite de six joueurs restent inchangés.
@@ -2445,7 +2446,17 @@ Statut : `À TESTER STUDIO`
 
 Statut : `À TESTER STUDIO`
 
-- Le slot 1 applique désormais le même correctif horizontal `+10 px` à son petit label, son nom réel, sa ligne de métadonnées et ses icônes Âge/Joueurs; leur Y et les slots 2/3 restent inchangés.
+- Le slot 1 applique désormais le même correctif horizontal `+10 px` à son petit label, son nom réel, sa ligne de métadonnées et ses icônes Année/Joueurs; leur Y et les slots 2/3 restent inchangés.
+
+## YEARS ON ISLAND + CYCLE 17 MINUTES
+
+Statut : `À TESTER STUDIO + ROBLOX PLAYER`
+
+- Le gameplay affiche désormais `ANNÉE 0` pour un monde neuf. Un cycle complet de 17 minutes, composé de 13 minutes de jour et 4 minutes de nuit, ajoute une année passée sur l'archipel.
+- La compatibilité production ne modifie ni `SchemaVersion = 1`, ni namespace, ni clé DataStore. `Time.Age`, `WorldState.EscapeAge` et `WorldState.LongevityAge` restent les champs persistants historiques et l'unique source serveur; les valeurs joueur sont dérivées avec l'offset 10.
+- Un ancien monde `Age = 17` est donc présenté comme `YearsOnIsland = 7`. Un snapshot sans `CycleTimingVersion` est converti une seule fois : les secondes écoulées dans le jour ou la nuit sont conservées, puis le marqueur additif `CycleTimingVersion = 2` empêche toute reconversion ultérieure.
+- `TimeState.YearsOnIsland`, les cartes de mondes, le panneau temporel de l'inventaire et le message de fin affichent la nouvelle sémantique. Les records d'évasion minimum et de longévité maximum restent stockés sans réécriture, puis sont convertis uniquement pour l'affichage.
+- Validation statique et build Rojo réussis. Tests Studio/Roblox Player encore requis sur monde neuf, cycle complet, sauvegarde/rechargement, copie représentative d'un monde production historique, UI et fin de partie.
 - Le template commun des trois cartes utilise un conteneur d'actions élargi à 32 % avec un espacement fixe de 6 px et trois hitboxes uniformes de 38×38 px.
 - L'ordre commun est imposé par `LayoutOrder` : Rename 1, Members 2, Delete 3. Rename utilise l'icône Roblox compose/crayon, Members l'icône groupe et Delete conserve la croix rouge.
 - Les callbacks Rename, Members et Delete, le background, la navigation, les permissions, les mondes et toute persistence restent inchangés.

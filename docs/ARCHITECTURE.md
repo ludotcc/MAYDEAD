@@ -51,7 +51,7 @@ Le client ne doit jamais être considéré comme une source fiable pour :
 -   créer des objets ;
 -   valider un craft ;
 -   terminer une production ;
--   modifier l'âge ;
+-   modifier YearsOnIsland ;
 -   modifier la météo ;
 -   installer une pièce d'hydravion ;
 -   modifier une sauvegarde ;
@@ -393,7 +393,7 @@ Responsable de :
 
 -   cycle jour/nuit ;
 -   temps du monde ;
--   âge ;
+-   YearsOnIsland ;
 -   progression annuelle.
 
 ### WeatherService
@@ -820,7 +820,7 @@ Exemples :
 
 -   propriétaire ;
 -   membres ;
--   âge ;
+-   YearsOnIsland ;
 -   constructions ;
 -   coffres ;
 -   cultures ;
@@ -883,7 +883,7 @@ WorldId
 OwnerUserId
 Members
 CreatedAt
-Age
+Age (legacy persisted field = YearsOnIsland + 10)
 WorldState
 Buildings
 Storages
@@ -1023,7 +1023,7 @@ Les valeurs de respawn proviennent de la configuration d'équilibrage.
 
 ------------------------------------------------------------------------
 
-## 30. TEMPS ET ÂGE
+## 30. TEMPS ET ANNÉES SUR L'ARCHIPEL
 
 Le serveur est l'autorité du temps.
 
@@ -1031,16 +1031,21 @@ Le serveur est l'autorité du temps.
 
 -   progression de la journée ;
 -   nuit ;
--   changement d'âge ;
+-   changement de YearsOnIsland ;
 -   événements de cycle.
 
 Le client reçoit l'état nécessaire pour afficher :
 
 -   heure visuelle ;
--   âge ;
+-   YearsOnIsland ;
 -   transitions.
 
-Le client ne calcule pas seul l'âge officiel.
+Le client ne calcule pas seul YearsOnIsland. `TimeService` conserve le champ
+persistant historique `Age` comme source unique du schéma V1 et réplique
+`YearsOnIsland = Age - 10`. `CycleProgress` reste une progression normalisée.
+Un snapshot sans `CycleTimingVersion` est interprété comme le cycle historique
+10 + 4 minutes puis converti une seule fois vers la version 13 + 4 en conservant
+les secondes écoulées et la phase; le marqueur additif vaut ensuite `2`.
 
 ------------------------------------------------------------------------
 
@@ -1224,7 +1229,7 @@ Un record n'est enregistré que par le serveur.
 Avant validation :
 
 -   vérifier que l'évasion est réelle ;
--   récupérer l'âge serveur ;
+-   récupérer YearsOnIsland depuis le serveur ;
 -   récupérer la taille d'équipe ;
 -   vérifier les règles de classement ;
 -   vérifier l'intégrité de la partie.

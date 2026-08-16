@@ -127,7 +127,7 @@ Le client ne décide jamais seul :
 -   du contenu d'un inventaire ;
 -   d'un craft réussi ;
 -   des dégâts ;
--   de l'âge ;
+-   des années passées sur l'archipel ;
 -   de la progression du monde ;
 -   des Documents analysés ;
 -   de l'hydravion ;
@@ -838,7 +838,7 @@ tactile.
 
 ## 51. SÉCURITÉ DES RECORDS
 
-Toute fonctionnalité pouvant améliorer l'âge d'évasion doit être
+Toute fonctionnalité pouvant réduire le nombre d'années avant l'évasion doit être
 considérée comme sensible.
 
 Les records doivent utiliser uniquement des données validées côté

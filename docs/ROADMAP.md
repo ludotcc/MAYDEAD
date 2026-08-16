@@ -157,7 +157,7 @@ Le chantier est terminé lorsque :
 
 ------------------------------------------------------------------------
 
-# 6. GRAND CHANTIER 1 --- MONDE, TEMPS ET ÂGE
+# 6. GRAND CHANTIER 1 --- MONDE, TEMPS ET ANNÉES SUR L'ARCHIPEL
 
 **Priorité : P0**
 
@@ -167,23 +167,23 @@ Créer le premier système fondamental visible de MAYDEAD.
 
 ## Tâches
 
--   [ ] Créer `TimeService`.
--   [ ] Définir la configuration du cycle.
--   [ ] Jour = 10 minutes.
--   [ ] Nuit = 4 minutes.
--   [ ] Cycle complet = 14 minutes.
--   [ ] Début = Âge 10.
--   [ ] +1 année à chaque cycle complet.
--   [ ] Synchroniser le temps entre tous les joueurs.
--   [ ] Piloter `Lighting` depuis le serveur.
--   [ ] Créer transitions jour/nuit.
--   [ ] Afficher l'âge dans un HUD temporaire.
+-   [x] Créer `TimeService`.
+-   [x] Définir la configuration du cycle.
+-   [x] Jour = 13 minutes.
+-   [x] Nuit = 4 minutes.
+-   [x] Cycle complet = 17 minutes.
+-   [x] Début = Année 0.
+-   [x] +1 année passée sur l'archipel à chaque cycle complet.
+-   [x] Synchroniser le temps entre tous les joueurs.
+-   [x] Piloter `Lighting` depuis le serveur.
+-   [x] Créer transitions jour/nuit.
+-   [x] Afficher l'année sur l'archipel dans l'inventaire.
 -   [ ] Tester plusieurs cycles.
--   [ ] Vérifier qu'un joueur rejoignant reçoit l'âge correct.
+-   [ ] Vérifier qu'un joueur rejoignant reçoit l'année correcte.
 
 ## Validation
 
-Deux joueurs voient le même cycle et le même âge.
+Deux joueurs voient le même cycle et la même année sur l'archipel.
 
 ------------------------------------------------------------------------
 
@@ -656,14 +656,14 @@ Transformer le prototype en vraie partie persistante.
 -   [x] schéma versionné — `StructuresVersion = 2`, lecture de la version précédente conservée, `VALIDÉ STUDIO`.
 -   [x] WorldId — isolation monde A / monde B `VALIDÉE STUDIO`.
 -   [x] données joueur — inventaire et QuickSlots `VALIDÉS STUDIO`.
--   [x] données monde — âge, progression, constructions et états internes `VALIDÉS STUDIO`.
+-   [x] données monde — temps legacy compatible, progression, constructions et états internes `VALIDÉS STUDIO`.
 -   [x] autosave — intervalle de 120 secondes `VALIDÉ STUDIO`.
 -   [x] sauvegarde fermeture — `PlayerRemoving`, dernier joueur et `BindToClose` `VALIDÉS STUDIO`.
 -   [x] retry contrôlé — protections DataStore et conservation du dernier snapshot réussi `VALIDÉES STUDIO`.
 -   [ ] migrations.
 -   [x] restauration constructions — géométrie, identifiants, rotation, relations de snapping et isolation `VALIDÉS STUDIO`.
 -   [x] restauration coffres — Chest 30 slots et CraftingTable 12 slots `VALIDÉS STUDIO`.
--   [x] restauration âge — `VALIDÉE STUDIO`.
+-   [x] restauration du champ historique `Age` et de la progression — `VALIDÉE STUDIO` avant le changement d'affichage YearsOnIsland.
 -   [x] restauration progression — monde et GardenPlot sans progression hors ligne `VALIDÉE STUDIO`.
 
 ## Validation
@@ -1150,7 +1150,7 @@ Chaque pièce installée est visible et sauvegardée.
 -   [ ] déclenchement serveur ;
 -   [ ] cinématique ;
 -   [ ] ÉVASION RÉUSSIE ;
--   [ ] âge ;
+-   [ ] années nécessaires à l'évasion ;
 -   [ ] temps ;
 -   [ ] statistiques.
 
@@ -1263,7 +1263,7 @@ avant développement final.
 ## Tâches
 
 -   [ ] record personnel ;
--   [ ] âge ;
+-   [ ] YearsOnIsland ;
 -   [ ] temps départage ;
 -   [ ] validation serveur ;
 -   [ ] classement global ;
@@ -1475,7 +1475,7 @@ conception.
 -   comprennent-ils quoi faire ?
 -   trouvent-ils l'eau ?
 -   comprennent-ils le craft ?
--   comprennent-ils l'âge ?
+-   comprennent-ils le compteur d'années sur l'archipel ?
 -   construisent-ils naturellement ?
 -   comprennent-ils les Documents ?
 -   trouvent-ils la Table de Plans importante ?
@@ -1520,7 +1520,7 @@ Ajuster notamment :
 -   [ ] production ;
 -   [ ] industrie ;
 -   [ ] hydravion ;
--   [ ] âge moyen d'évasion.
+-   [ ] nombre moyen d'années avant l'évasion.
 
 Les valeurs doivent être basées sur les playtests, pas uniquement sur
 des suppositions.
@@ -1666,7 +1666,7 @@ Une fois les documents maîtres terminés, l'ordre immédiat est :
 2. Nettoyage du prototype/test existant
 3. TimeService
 4. Cycle jour/nuit
-5. Système d'Âge
+5. Compteur YearsOnIsland
 6. WeatherService
 7. Météo V1
 8. Interaction

@@ -196,7 +196,7 @@ The client must never be trusted to decide:
 -   building creation;
 -   damage;
 -   survival values;
--   world age;
+-   YearsOnIsland;
 -   blueprint progression;
 -   hydroplane progression;
 -   escape completion;
@@ -603,20 +603,23 @@ Do not replicate every rain droplet as a networked physical object.
 
 ------------------------------------------------------------------------
 
-## 28. TIME AND AGE
+## 28. TIME AND YEARS ON ISLAND
 
-The server owns official world time and Age.
+The server owns official world time and YearsOnIsland.
 
 Current validated design reference:
 
 ``` text
-Starting Age: 10
-Day: 10 minutes
+Starting YearsOnIsland: 0
+Day: 13 minutes
 Night: 4 minutes
-Full cycle: +1 year
+Full cycle: 17 minutes
+Full cycle: +1 year on the island
 ```
 
-Do not let clients independently determine the official Age.
+Do not let clients independently determine the official YearsOnIsland.
+For schema V1 compatibility, persisted `Age` remains a legacy internal field
+equal to `YearsOnIsland + 10`; it must not be reset or renamed destructively.
 
 ------------------------------------------------------------------------
 
@@ -660,7 +663,7 @@ Solo
 Primary metric:
 
 ``` text
-lowest escape Age
+lowest YearsOnIsland at escape
 ```
 
 Do not introduce monetized gameplay advantages into official record
@@ -839,7 +842,7 @@ optional expansion.
 Current high-level sequence begins with:
 
 ``` text
-Time / Age
+Time / YearsOnIsland
 ↓
 Weather
 ↓
@@ -890,7 +893,7 @@ After documentation validation, the intended technical start is:
 4.  decide what prototype code should remain;
 5.  implement the official `TimeService`;
 6.  implement day/night;
-7.  implement Age;
+7.  implement YearsOnIsland;
 8.  test;
 9.  update `PROJECT_STATUS.md`.
 

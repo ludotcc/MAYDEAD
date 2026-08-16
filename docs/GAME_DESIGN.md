@@ -53,7 +53,7 @@ Les survivants doivent :
 
 Le joueur peut poursuivre deux objectifs :
 
-1.  **Évasion** --- quitter l'archipel au plus jeune âge possible et
+1.  **Évasion** --- quitter l'archipel après le moins d'années possible et
     battre ses records.
 2.  **Survie libre** --- continuer indéfiniment à construire, produire,
     explorer et améliorer son monde sans obligation de partir.
@@ -110,47 +110,47 @@ Le joueur reprend ensuite le contrôle à proximité de la zone du crash.
 
 ------------------------------------------------------------------------
 
-## 5. SYSTÈME D'ÂGE
+## 5. ANNÉES SUR L'ARCHIPEL
 
 Le temps de MAYDEAD n'est pas principalement présenté en « Day 1 », «
 Day 2 », etc.
 
-Le personnage commence la partie à :
+Chaque monde commence à :
 
-**ÂGE 10**
+**ANNÉE 0**
 
 Un cycle complet jour + nuit représente :
 
-**1 année d'âge.**
+**1 année passée sur l'archipel.**
 
 Le joueur passe donc progressivement à :
 
--   Âge 11 ;
--   Âge 12 ;
--   Âge 13 ;
+-   Année 1 ;
+-   Année 2 ;
+-   Année 3 ;
 -   etc.
 
-L'âge devient le principal indicateur de durée d'une tentative.
+Le nombre d'années sur l'archipel devient le principal indicateur de
+durée d'une tentative et de longévité en survie libre.
 
 ### 5.1 Record
 
-Lors d'une évasion réussie, le score principal est l'âge du survivant.
+Lors d'une évasion réussie, le score principal est le nombre d'années
+nécessaires pour quitter l'archipel.
 
 Exemple :
 
-**ÉVASION RÉUSSIE --- ÂGE 24**
+**ÉVASION RÉUSSIE --- 14 ANNÉES**
 
-L'objectif compétitif consiste à réussir l'évasion au plus jeune âge
-possible.
+L'objectif compétitif consiste à réussir l'évasion après le moins
+d'années possible.
 
 Le temps réel pourra servir de critère secondaire/départage.
 
 ### 5.2 Vieillissement visuel
 
-Aucun vieillissement physique réaliste du personnage n'est requis en V1.
-
-L'âge est avant tout une mécanique de temps, de progression et de
-record.
+Le compteur ne représente pas un âge biologique. Aucun vieillissement
+physique, visuel ou statistique du personnage n'en découle.
 
 ------------------------------------------------------------------------
 
@@ -158,9 +158,9 @@ record.
 
 Valeur actuellement validée :
 
--   **Jour : 10 minutes**
+-   **Jour : 13 minutes**
 -   **Nuit : 4 minutes**
--   **Cycle complet : 14 minutes**
+-   **Cycle complet : 17 minutes**
 -   **Cycle complet = +1 année**
 
 Ces valeurs devront être évaluées pendant les playtests mais
@@ -248,7 +248,7 @@ Lorsque personne ne joue dans le monde :
 
 **le temps du monde est arrêté.**
 
-Les cultures, l'âge et les autres systèmes temporels ne continuent pas
+Les cultures, les années sur l'archipel et les autres systèmes temporels ne continuent pas
 pendant plusieurs heures/jours réels d'absence.
 
 ### 8.5 Instance unique
@@ -1251,7 +1251,7 @@ Le jeu affiche ensuite :
 
 avec notamment :
 
--   âge ;
+-   années passées sur l'archipel ;
 -   temps réel ;
 -   nombre de joueurs ;
 -   statistiques pertinentes ;
@@ -1295,7 +1295,7 @@ performance solo.
 
 Le critère principal est :
 
-**âge d'évasion le plus faible.**
+**nombre d'années d'évasion le plus faible.**
 
 ------------------------------------------------------------------------
 
@@ -1388,7 +1388,7 @@ artificiellement un record officiel.**
 -   hydravion accéléré ;
 -   invincibilité ;
 -   suppression de la faim/soif ;
--   avantages permettant directement un meilleur âge d'évasion.
+-   avantages permettant directement une évasion en moins d'années.
 
 La priorité est donnée à :
 
@@ -1592,7 +1592,7 @@ La progression envisagée est :
 ### Phase 9 --- Résultat
 
 -   ÉVASION RÉUSSIE ;
--   âge ;
+-   années passées sur l'archipel ;
 -   statistiques ;
 -   record ;
 -   continuation libre ou nouvelle tentative.
@@ -1615,7 +1615,7 @@ gameplay.
 
 L'identité propre de MAYDEAD repose notamment sur :
 
--   le système d'Âge ;
+-   le compteur d'années sur l'archipel ;
 -   la course à l'évasion ;
 -   le monde persistant coopératif ;
 -   les Documents techniques ;
@@ -1710,8 +1710,8 @@ Statut : `À TESTER STUDIO / ROBLOX PLAYER`.
 - La `Factory` finale est fabriquée à la Table de craft avec `MetalPanelStack x12`, `MetalIngot x20` et `CopperIngot x10`.
 - La Factory est une station partagée du monde. Son inventaire accepte uniquement `MetalPanelStack` et `PlasticPanelStack` avec les transferts officiels joueur/station.
 - Le `Naval Seaplane` est produit uniquement dans la Factory avec `MetalPanelStack x40` et `PlasticPanelStack x30`, en 60 secondes de présence active du monde.
-- Un seul Naval Seaplane final est validé par monde. L'objectif principal terminé ne ferme ni ne supprime le monde : survie, construction, exploration et vieillissement continuent.
-- Le record d'évasion conserve le plus faible Age. Le record de longévité conserve le plus grand Age atteint et peut progresser après la fin principale.
+- Un seul Naval Seaplane final est validé par monde. L'objectif principal terminé ne ferme ni ne supprime le monde : survie, construction, exploration et compteur d'années continuent.
+- Le record d'évasion conserve le plus faible nombre d'années sur l'archipel. Le record de longévité conserve le plus grand nombre d'années atteint et peut progresser après la fin principale.
 
 **MAYDEAD --- Game Design Document V1**
 
