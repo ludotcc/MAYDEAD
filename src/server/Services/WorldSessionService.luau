@@ -15,6 +15,9 @@ function WorldSessionService.new()
 	local self = setmetatable({}, WorldSessionService)
 	self._session = nil
 	self._lastRequests = {}
+	self._getStateCache = {}
+	self._getStateInFlight = {}
+	self._getStateVersions = {}
 	self._lastRenames = {}
 	self._returning = {}
 	self._deleting = {}
@@ -181,8 +184,17 @@ local function resolveNames(records)
 	end
 end
 
-function WorldSessionService:_handle(player, action, payload)
-	if action == "GetState" then
+function WorldSessionService:_getState(player)
+	local cached = self._getStateCache[player]
+	local version = self._getStateVersions[player] or 0
+	if cached and cached.Version == version and os.clock() - cached.Timestamp < Config.GET_STATE_CACHE_SECONDS then
+		return cached.Response
+	end
+	if self._getStateInFlight[player] then
+		return {Ok = false, Error = "RequestInProgress", State = self:_publicStateFor(player)}
+	end
+	self._getStateInFlight[player] = true
+	local callOk, response = pcall(function()
 		local ok, slotsOrError = WorldService:GetOwnerSlots(player.UserId)
 		if not ok then return {Ok = false, Error = slotsOrError, State = self:_publicStateFor(player)} end
 		local joinedOk, joinedOrError = WorldService:GetJoinedWorlds(player.UserId)
@@ -194,6 +206,23 @@ function WorldSessionService:_handle(player, action, payload)
 		state.JoinedWorlds = joinedOrError.JoinedWorlds
 		state.PendingInvites = joinedOrError.PendingInvites
 		return {Ok = true, State = state}
+	end)
+	self._getStateInFlight[player] = nil
+	if not callOk then error(response) end
+	if response.Ok and player.Parent == Players and (self._getStateVersions[player] or 0) == version then
+		self._getStateCache[player] = {Timestamp = os.clock(), Version = version, Response = response}
+	end
+	return response
+end
+
+function WorldSessionService:_invalidateGetState(player)
+	self._getStateCache[player] = nil
+	self._getStateVersions[player] = (self._getStateVersions[player] or 0) + 1
+end
+
+function WorldSessionService:_handle(player, action, payload)
+	if action == "GetState" then
+		return self:_getState(player)
 	end
 	local now = os.clock()
 	if now - (self._lastRequests[player] or -math.huge) < Config.REQUEST_COOLDOWN then
@@ -443,6 +472,9 @@ function WorldSessionService:Start()
 	end)
 	Players.PlayerRemoving:Connect(function(player)
 		self._lastRequests[player] = nil
+		self._getStateCache[player] = nil
+		self._getStateInFlight[player] = nil
+		self._getStateVersions[player] = nil
 		self._lastRenames[player] = nil
 		self._returning[player] = nil
 		self._deleting[player] = nil
@@ -469,6 +501,19 @@ function WorldSessionService:Start()
 		if not ok then
 			warn("[WorldSession] Request failed: " .. tostring(result))
 			return {Ok = false, Error = "ServerError", State = self:_publicStateFor(player)}
+		end
+		if action ~= "GetState" and result and result.Ok then
+			self:_invalidateGetState(player)
+			local affectedUserId
+			if action == "InviteMember" then
+				affectedUserId = typeof(payload) == "table" and payload.TargetUserId or nil
+			elseif action == "RemoveMember" then
+				affectedUserId = typeof(payload) == "table" and payload.MemberUserId or nil
+			end
+			if typeof(affectedUserId) == "number" then
+				local affectedPlayer = Players:GetPlayerByUserId(affectedUserId)
+				if affectedPlayer and affectedPlayer ~= player then self:_invalidateGetState(affectedPlayer) end
+			end
 		end
 		if action ~= "GetState" and result then result.State = self:_publicStateFor(player) end
 		return result
