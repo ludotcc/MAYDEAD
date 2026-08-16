@@ -42,7 +42,11 @@ local controller = {
 	Station = nil,
 	StationState = nil,
 	Cards = {},
+	SectionHeaders = {},
 }
+
+local CATEGORY_ORDER = {Construction = 1, Factory = 2, Misc = 3}
+local CATEGORY_LABELS = {Construction = "CONSTRUCTION", Factory = "FACTORY", Misc = "DIVERS"}
 
 local function addCorner(instance, radius)
 	local corner = Instance.new("UICorner")
@@ -87,6 +91,11 @@ local function getRecipesForType(craftType)
 	table.sort(recipeIds, function(leftId, rightId)
 		local left = RecipeDefinitions[leftId]
 		local right = RecipeDefinitions[rightId]
+		if craftType == "Workbench" then
+			local leftCategory = CATEGORY_ORDER[left.UiCategory or "Misc"] or CATEGORY_ORDER.Misc
+			local rightCategory = CATEGORY_ORDER[right.UiCategory or "Misc"] or CATEGORY_ORDER.Misc
+			if leftCategory ~= rightCategory then return leftCategory < rightCategory end
+		end
 		if left.SortOrder == right.SortOrder then
 			return left.Id < right.Id
 		end
@@ -136,7 +145,7 @@ function controller:_renderAvailability()
 	end
 end
 
-function controller:_buildCard(recipeId)
+function controller:_buildCard(recipeId, layoutOrder)
 	local recipe = RecipeDefinitions[recipeId]
 	local card = Instance.new("Frame")
 	card.Name = recipeId
@@ -144,6 +153,7 @@ function controller:_buildCard(recipeId)
 	card.BackgroundColor3 = Color3.fromRGB(16, 21, 30)
 	card.BackgroundTransparency = 0.08
 	card.BorderSizePixel = 0
+	card.LayoutOrder = layoutOrder or 0
 	card.Parent = self.List
 	addCorner(card, 11)
 	addStroke(card, Color3.fromRGB(75, 88, 105), 0.72)
@@ -220,6 +230,37 @@ function controller:_buildCard(recipeId)
 	self.Cards[recipeId] = {Frame = card, Ingredients = ingredients, Button = button}
 end
 
+function controller:_buildSectionHeader(category, layoutOrder)
+	local header = Instance.new("Frame")
+	header.Name = "Category_" .. category
+	header.Size = UDim2.new(1, -8, 0, 30)
+	header.BackgroundTransparency = 1
+	header.LayoutOrder = layoutOrder
+	header.Parent = self.List
+
+	local accent = Instance.new("Frame")
+	accent.Size = UDim2.fromOffset(3, 16)
+	accent.Position = UDim2.fromOffset(2, 7)
+	accent.BackgroundColor3 = category == "Factory" and Color3.fromRGB(204, 149, 67)
+		or category == "Construction" and Color3.fromRGB(91, 167, 130)
+		or Color3.fromRGB(105, 126, 157)
+	accent.BorderSizePixel = 0
+	accent.Parent = header
+	addCorner(accent, 2)
+
+	local label = Instance.new("TextLabel")
+	label.Size = UDim2.new(1, -18, 1, 0)
+	label.Position = UDim2.fromOffset(14, 0)
+	label.BackgroundTransparency = 1
+	label.Text = CATEGORY_LABELS[category] or "DIVERS"
+	label.TextColor3 = Color3.fromRGB(177, 189, 205)
+	label.Font = Enum.Font.GothamBold
+	label.TextSize = 11
+	label.TextXAlignment = Enum.TextXAlignment.Left
+	label.Parent = header
+	table.insert(self.SectionHeaders, header)
+end
+
 function controller:_showCraft(craftType, station)
 	self.CraftType = craftType
 	self.Station = station
@@ -237,9 +278,21 @@ function controller:_showCraft(craftType, station)
 	for _, card in self.Cards do
 		card.Frame:Destroy()
 	end
+	for _, sectionHeader in self.SectionHeaders do sectionHeader:Destroy() end
 	self.Cards = {}
+	self.SectionHeaders = {}
+	local currentCategory
+	local layoutOrder = 0
 	for _, recipeId in ipairs(getRecipesForType(craftType)) do
-		self:_buildCard(recipeId)
+		local recipe = RecipeDefinitions[recipeId]
+		local category = recipe.UiCategory or "Misc"
+		if craftType == "Workbench" and category ~= currentCategory then
+			currentCategory = category
+			layoutOrder += 1
+			self:_buildSectionHeader(category, layoutOrder)
+		end
+		layoutOrder += 1
+		self:_buildCard(recipeId, layoutOrder)
 	end
 	self:_renderAvailability()
 end

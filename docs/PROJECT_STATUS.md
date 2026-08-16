@@ -2620,3 +2620,11 @@ Statut : `IMPLÉMENTÉ — À TESTER STUDIO`
 - Les 28 slots sont simulés ensemble avec fusion des stacks et limites `MaxStack`. Une capacité insuffisante refuse tout le démontage sans modifier machine, outputs ou inventaire.
 - Après validation, l'inventaire simulé est appliqué une seule fois, les outputs physiques remboursés sont détruits, la machine est désenregistrée puis supprimée. Aucun yield, nouveau Remote, changement DataStore, schéma, snapshot ou migration.
 - AutomaticLoader et ConveyorStraight restent sur leur comportement existant.
+
+## CRAFTINGTABLE RECIPE CATEGORIES
+
+Statut : `IMPLÉMENTÉ — À TESTER STUDIO`
+
+- La liste Workbench est regroupée visuellement dans l'ordre fixe `CONSTRUCTION → FACTORY → DIVERS`. Chaque recette porte une `UiCategory` statique centralisée; l'ordre `SortOrder` historique reste inchangé dans chaque groupe.
+- Les séparateurs sont non interactifs, les cartes conservent leurs dimensions et callbacks, et le `ScrollingFrame` conserve son `AutomaticCanvasSize.Y` pour PC, tablette et téléphone.
+- Aucun RecipeId, ItemId, ingrédient, quantité, temps, résultat, validation serveur, Remote ou format persistant n'est modifié.

@@ -1713,6 +1713,7 @@ Statut : `VALIDÉ PAR LE GAME DIRECTOR`.
 - Un seul Naval Seaplane final est validé par monde. L'objectif principal terminé ne ferme ni ne supprime le monde : survie, construction, exploration et compteur d'années continuent.
 - Le record d'évasion conserve le plus faible nombre d'années sur l'archipel. Le record de longévité conserve le plus grand nombre d'années atteint et peut progresser après la fin principale.
 - Démonter un Recycler ou une IndustrialPress restitue la machine et toutes les ressources encore détenues, uniquement si l'inventaire peut accepter la totalité. Les files, l'input en cours et les outputs restent exacts; les compteurs `MetalMaterial`/`PlasticMaterial` du Recycler sont remboursés canoniquement en `MetalWaste`/`PlasticWaste`, leur conversion depuis un éventuel `WasteBag` étant déjà accomplie.
+- La liste de la CraftingTable présente les recettes par sections fixes `CONSTRUCTION`, `FACTORY`, puis `DIVERS`. Cet ordre est purement visuel et conserve l'ordre de design `SortOrder` à l'intérieur de chaque section.
 
 **MAYDEAD --- Game Design Document V1**
 
