@@ -28,6 +28,7 @@ docs/ARCHITECTURE.md
 docs/ROADMAP.md
 docs/PROJECT_STATUS.md
 docs/DEVELOPMENT_RULES.md
+docs/INPUT_CONTROLS.md
 ```
 
 Their responsibilities are:
@@ -37,6 +38,7 @@ Their responsibilities are:
 -   `ROADMAP.md` = intended development order.
 -   `PROJECT_STATUS.md` = actual current implementation status.
 -   `DEVELOPMENT_RULES.md` = mandatory development practices.
+-   `INPUT_CONTROLS.md` = PC, tablet, and phone controls source of truth.
 
 Do not rely only on this `AGENTS.md` when a task depends on detailed
 gameplay or architecture.
@@ -86,6 +88,23 @@ Use:
 ``` text
 docs/ROADMAP.md
 ```
+
+### Player controls and interactive UI
+
+Use:
+
+``` text
+docs/INPUT_CONTROLS.md
+```
+
+Before implementing input, player interaction, or interactive UI:
+
+-   read `INPUT_CONTROLS.md`;
+-   preserve existing PC controls;
+-   provide viable tablet and phone paths;
+-   reuse existing Remotes when possible;
+-   test PC, tablet, and phone;
+-   update `INPUT_CONTROLS.md` in the same task when a control changes.
 
 If two official documents contradict each other, do not silently choose
 one.

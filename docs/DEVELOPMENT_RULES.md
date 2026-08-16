@@ -29,7 +29,8 @@ Avant toute modification importante, respecter les documents suivants :
 3.  `ROADMAP.md` --- ordre de développement.
 4.  `PROJECT_STATUS.md` --- état réel du projet.
 5.  `DEVELOPMENT_RULES.md` --- méthode de développement.
-6.  `../AGENTS.md` --- instructions impératives destinées notamment à
+6.  `INPUT_CONTROLS.md` --- contrôles PC, tablette et téléphone.
+7.  `../AGENTS.md` --- instructions impératives destinées notamment à
     Codex.
 
 Ne pas inventer une règle manquante pour débloquer artificiellement une
@@ -153,6 +154,40 @@ Selon le système, vérifier notamment :
 -   existence de la cible.
 
 Ne jamais faire confiance à une valeur fournie uniquement par le client.
+
+------------------------------------------------------------------------
+
+## COMPATIBILITÉ INPUT MULTIPLATEFORME
+
+Toute mécanique interactive doit considérer dès sa conception :
+
+-   PC clavier/souris ;
+-   tablette tactile ;
+-   téléphone tactile.
+
+Règles obligatoires :
+
+-   lire `INPUT_CONTROLS.md` avant de modifier un input ou une UI
+    interactive ;
+-   ne pas coder une action nécessaire uniquement avec `Enum.KeyCode` sans
+    équivalent tactile viable ;
+-   ne pas remplacer ou casser un contrôle PC pour ajouter le mobile ;
+-   faire appeler au mobile la même logique gameplay, le même Remote et les
+    mêmes validations serveur lorsque possible ;
+-   ne jamais déplacer une validation gameplay vers le client pour faciliter
+    le tactile ;
+-   tester joystick, caméra et second doigt simultanément ;
+-   vérifier la taille, la lisibilité, les safe insets et les chevauchements
+    avec JumpButton et hotbar ;
+-   gérer `gameProcessed`, drag, appui long et `InputEnded` sans annuler un
+    geste valide ;
+-   tester réellement PC, tablette et téléphone avant validation ;
+-   mettre à jour `INPUT_CONTROLS.md` dans le même chantier que toute
+    modification de contrôle, binding, geste ou UI interactive.
+
+Une feature interactive ne doit pas être considérée terminée tant que sa
+compatibilité multiplateforme n'a pas été traitée ou qu'une exception de
+conception n'a pas été explicitement validée.
 
 ------------------------------------------------------------------------
 
@@ -793,8 +828,8 @@ Une action importante doit fournir un feedback clair :
 
 ## 50. MOBILE
 
-Toute interaction majeure conçue pour clavier/souris doit pouvoir
-recevoir ultérieurement un équivalent mobile.
+Toute interaction majeure conçue pour clavier/souris doit disposer d'un
+équivalent viable sur tablette et téléphone dès sa validation.
 
 Ne pas construire une mécanique essentielle impossible à adapter au
 tactile.
