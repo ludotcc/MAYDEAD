@@ -11,6 +11,8 @@ local StationService = require(script.Parent:WaitForChild("StationService"))
 
 local FactoryService = {}
 FactoryService.__index = FactoryService
+local FINAL_ASSEMBLE_MIN_INTERVAL = 0.5
+local FINAL_REQUEST_ACTIONS = {Assemble = true, Close = true}
 
 local FACTORY_ITEM_TAG = "FactoryItem"
 local FACTORY_MACHINE_TAG = "FactoryMachine"
@@ -204,6 +206,7 @@ function FactoryService.new()
 	self._debugIntakeItem = nil
 	self._recyclerViewers = setmetatable({}, {__mode = "k"})
 	self._finalViewers = setmetatable({}, {__mode = "k"})
+	self._lastFinalAssembleRequests = {}
 	self._statusAccumulator = 0
 	self._statusOpened = Instance.new("RemoteEvent")
 	self._statusOpened.Name = "RecyclerStatusOpened"
@@ -1140,12 +1143,20 @@ function FactoryService:Start(worldService)
 	end)
 	self._finalRequest.OnServerEvent:Connect(function(player, action, machine)
 		if player:GetAttribute("SessionStarted") ~= true or (worldService and not worldService:IsRuntimeMember(player)) then return end
+		if typeof(action) ~= "string" or not FINAL_REQUEST_ACTIONS[action] or typeof(machine) ~= "Instance" then return end
 		local data = self._machines[machine]
 		if not data or data.Type ~= "Factory" or not machine:IsDescendantOf(workspace)
 			or typeof(machine:GetAttribute("StructureId")) ~= "string"
 		then return end
-		if action == "Assemble" then self:_startFinalBuild(player, machine, data)
+		if action == "Assemble" then
+			local now = os.clock()
+			if now - (self._lastFinalAssembleRequests[player] or -math.huge) < FINAL_ASSEMBLE_MIN_INTERVAL then return end
+			self._lastFinalAssembleRequests[player] = now
+			self:_startFinalBuild(player, machine, data)
 		elseif action == "Close" and self._finalViewers[machine] then self._finalViewers[machine][player] = nil end
+	end)
+	Players.PlayerRemoving:Connect(function(player)
+		self._lastFinalAssembleRequests[player] = nil
 	end)
 	self:_startResourceSpawns()
 	for _, child in workspace:GetDescendants() do
