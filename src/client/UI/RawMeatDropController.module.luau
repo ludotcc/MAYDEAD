@@ -9,6 +9,7 @@ local playerGui = player:WaitForChild("PlayerGui")
 local inventoryStateChanged = ReplicatedStorage:WaitForChild("InventoryStateChanged")
 local worldDropRequest = ReplicatedStorage:WaitForChild("WorldDropRequest")
 local CheetahConfig = require(ReplicatedStorage.Shared.Config.CheetahConfig)
+local CheetahCompanionController = require(script.Parent:WaitForChild("CheetahCompanionController.module"))
 local InventoryController = require(script.Parent:WaitForChild("InventoryController.module"))
 
 local controller = {Inventory = nil}
@@ -101,6 +102,7 @@ function controller:Start()
 			and player:GetAttribute("SessionStarted") == true and player:GetAttribute("InMainMenu") ~= true
 			and player:GetAttribute("ReturningToMenu") ~= true and not InventoryController.Open
 			and not InventoryController.DragState and not InventoryController.DragGhost
+			and not CheetahCompanionController.Mounted
 			and humanoid and humanoid.Health > 0 and root and not character:FindFirstChildOfClass("Tool")
 		if available then
 			available = false
