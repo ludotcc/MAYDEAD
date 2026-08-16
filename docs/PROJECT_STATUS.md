@@ -2589,3 +2589,13 @@ Aucun P0 connu identifié par cet audit.
 ## Assets historiques
 
 Les noms `Tree_Test`, `Stone_Test`, `MetalRock_Test`, `Crystal_Test`, le fichier non suivi `MAYDEAD-cheetah-v2.rbxlx` et le dossier non suivi `assets/` sont conservés. Un nom contenant `Test`, `_Test`, `Debug`, `Prototype`, `Old` ou `Temp` n'est jamais une preuve suffisante d'inutilisation; code et DataModel Studio doivent être vérifiés avant suppression.
+
+## P1 MULTIJOUEUR / DATASTORE — RÉSERVATION MEMBERSHIP
+
+Statut : `CORRIGÉ STATIQUEMENT — TEST MULTISERVEUR RÉEL REQUIS`
+
+- L'audit a identifié une race lors de deux acceptations simultanées vers des mondes différents : les deux records monde pouvaient autoriser le joueur avant la revérification atomique de la limite des trois mondes rejoints, puis la réparation lazy pouvait matérialiser un quatrième index.
+- `AcceptWorldInvite` réserve désormais atomiquement une entrée `JoinedWorlds` en état `Accepting` avant d'ajouter le membership au monde. La limite 3/3 est donc décidée dans l'`UpdateAsync` de l'index partagé. Un échec de mutation monde rollback uniquement cette réservation; un échec de finalisation laisse une entrée découvrable et réparable.
+- `GetJoinedWorlds` ne supprime pas une réservation `Accepting` récente pendant cette transaction. Une réservation abandonnée redevient nettoyable après le timeout technique existant.
+- `PlayerRemoving` resynchronise également la table runtime transmise à `WorldService` après retrait du joueur, sans modifier l'ordre de capture ni le `task.defer` de l'inventaire.
+- DataStores, namespaces, schéma, champs YearsOnIsland legacy, limites officielles et système de session restent inchangés.

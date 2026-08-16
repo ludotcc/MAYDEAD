@@ -188,7 +188,10 @@ function WorldService:GetJoinedWorlds(userId)
 				Active = data.SessionLock ~= nil and (data.SessionLock.ExpiresAt or 0) > os.time()})
 			joinedById[worldId] = true
 			if entry.Status ~= "Ready" then DataService:RepairMemberIndexWorld(userId, worldId, data) end
-		elseif loaded then
+		elseif loaded and not (entry.Status == "Accepting"
+			and typeof(entry.ReservedAt) == "number"
+			and os.time() - entry.ReservedAt < Config.CREATE_RESERVATION_TIMEOUT)
+		then
 			DataService:RepairMemberIndexWorld(userId, worldId, nil)
 		end
 	end

@@ -484,6 +484,7 @@ function WorldSessionService:Start()
 			WorldService:CapturePlayer(player)
 			session.Members[player] = nil
 			session.PlayerCount = math.max(0, session.PlayerCount - 1)
+			WorldService:SetMembers(session.Members)
 			if session.PlayerCount == 0 then
 				if WorldService:Close("PlayerRemoving") then
 					self._session = nil

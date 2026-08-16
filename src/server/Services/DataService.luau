@@ -212,6 +212,34 @@ function DataService:AcceptWorldInvite(userId, worldId, maxJoined, maxMembers)
 	for _ in memberIndex.JoinedWorlds do joinedBefore += 1 end
 	if memberIndex.JoinedWorlds[worldId] == nil and joinedBefore >= maxJoined then return false, "JoinedWorldLimitReached" end
 
+	local reserved, reserveCode = false, "SaveFailed"
+	local indexReserved = retry(function()
+		return indexStore:UpdateAsync(memberIndexKey(userId), function(current)
+			reserved = false
+			current = normalizeMemberIndex(current)
+			if not current.PendingInvites[worldId] and not current.JoinedWorlds[worldId] then
+				reserveCode = "InviteNotFound"
+				return nil
+			end
+			local count = 0
+			for _ in current.JoinedWorlds do count += 1 end
+			local existing = current.JoinedWorlds[worldId]
+			if not existing and count >= maxJoined then
+				reserveCode = "JoinedWorldLimitReached"
+				return nil
+			end
+			local entry = existing or {WorldId = worldId, ReservedAt = os.time()}
+			entry.Status = "Accepting"
+			entry.OwnerUserId = invite.OwnerUserId
+			entry.DisplayName = invite.DisplayName
+			current.JoinedWorlds[worldId] = entry
+			reserved = true
+			reserveCode = "Reserved"
+			return current
+		end)
+	end)
+	if not indexReserved or not reserved then return false, reserveCode end
+
 	local membershipAdded, membershipCode = false, "SaveFailed"
 	local worldUpdated = retry(function()
 		return worldStore:UpdateAsync(worldKey(worldId), function(world)
@@ -228,23 +256,32 @@ function DataService:AcceptWorldInvite(userId, worldId, maxJoined, maxMembers)
 			return world
 		end)
 	end)
-	if not worldUpdated or not membershipAdded then return false, membershipCode end
+	if not worldUpdated or not membershipAdded then
+		local rolledBack = retry(function()
+			return indexStore:UpdateAsync(memberIndexKey(userId), function(current)
+				current = normalizeMemberIndex(current)
+				local entry = current.JoinedWorlds[worldId]
+				if entry and entry.Status == "Accepting" then current.JoinedWorlds[worldId] = nil end
+				return current
+			end)
+		end)
+		if not rolledBack then warn("[Membership] Failed acceptance reservation will be repaired lazily for " .. tostring(userId)) end
+		return false, membershipCode
+	end
 
 	local finalized, joinedAfter = false, joinedBefore
 	local indexUpdated = retry(function()
 		return indexStore:UpdateAsync(memberIndexKey(userId), function(current)
 			current = normalizeMemberIndex(current)
-			if not current.PendingInvites[worldId] and not current.JoinedWorlds[worldId] then return nil end
+			if not current.JoinedWorlds[worldId] then return nil end
 			local count = 0
 			for _ in current.JoinedWorlds do count += 1 end
-			local alreadyIndexed = current.JoinedWorlds[worldId] ~= nil
-			if not alreadyIndexed and count >= maxJoined then return nil end
-			local entry = current.JoinedWorlds[worldId] or {WorldId = worldId}
+			local entry = current.JoinedWorlds[worldId]
 			entry.Status = "Ready"; entry.JoinedAt = entry.JoinedAt or os.time()
 			entry.OwnerUserId = invite.OwnerUserId; entry.DisplayName = invite.DisplayName
 			current.JoinedWorlds[worldId] = entry
 			current.PendingInvites[worldId] = nil
-			joinedAfter = count + (alreadyIndexed and 0 or 1)
+			joinedAfter = count
 			finalized = true
 			return current
 		end)
