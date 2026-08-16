@@ -728,7 +728,7 @@ function controller:_build()
 	tabButton.AnchorPoint = Vector2.new(1, 0)
 	tabButton.BackgroundColor3 = Color3.fromRGB(74, 56, 37)
 	tabButton.BorderSizePixel = 0
-	tabButton.Text = "STATION"
+	tabButton.Text = "STOCK"
 	tabButton.TextColor3 = Color3.fromRGB(235, 221, 198)
 	tabButton.Font = Enum.Font.GothamSemibold
 	tabButton.TextSize = 10
@@ -770,7 +770,7 @@ function controller:_build()
 
 	local stationTitle = playerTitle:Clone()
 	stationTitle.Position = UDim2.new(0.52, 0, 0, 26)
-	stationTitle.Text = "STATION"
+	stationTitle.Text = "STOCK"
 	stationTitle.Parent = panel
 	self.StationTitle = stationTitle
 
