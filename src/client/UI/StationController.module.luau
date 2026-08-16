@@ -48,6 +48,9 @@ local controller = {
 	FinalFactoryState = nil,
 	DragGhost = nil,
 	DragState = nil,
+	TouchHalfButton = nil,
+	TouchHalfTransfer = nil,
+	TouchHalfRevision = 0,
 	SlotComponents = {},
 	DropZones = {},
 	FeedbackComponent = nil,
@@ -308,6 +311,57 @@ function controller:_cancelDrag()
 	self.DragState = nil
 end
 
+function controller:_hideTouchHalfAction()
+	self.TouchHalfRevision += 1
+	self.TouchHalfTransfer = nil
+	if self.TouchHalfButton then self.TouchHalfButton.Visible = false end
+end
+
+function controller:_showTouchHalfAction(drag, position)
+	if not UserInputService.TouchEnabled or not self.Panel.Visible then return end
+	if not self.TouchHalfButton then
+		local button = Instance.new("TextButton")
+		button.Name = "TouchHalfStackButton"
+		button.Size = UDim2.fromOffset(132, 44)
+		button.AnchorPoint = Vector2.new(0.5, 0.5)
+		button.BackgroundColor3 = Color3.fromRGB(25, 91, 108)
+		button.AutoButtonColor = true
+		button.BorderSizePixel = 0
+		button.Font = Enum.Font.GothamBold
+		button.Text = "½ PILE"
+		button.TextColor3 = Color3.fromRGB(231, 239, 244)
+		button.TextSize = 13
+		button.Visible = false
+		button.ZIndex = 40
+		button.Parent = InventoryController.ScreenGui
+		addCorner(button, 10)
+		local stroke = Instance.new("UIStroke")
+		stroke.Color = Color3.fromRGB(79, 178, 194)
+		stroke.Transparency = 0.15
+		stroke.Thickness = 1.5
+		stroke.Parent = button
+		button.Activated:Connect(function()
+			local transfer = self.TouchHalfTransfer
+			self:_hideTouchHalfAction()
+			if transfer and self.Panel.Visible then transfer.Callback("HALF_STACK", nil, transfer.DestinationArea) end
+		end)
+		self.TouchHalfButton = button
+	end
+	local camera = workspace.CurrentCamera
+	local viewport = camera and camera.ViewportSize or Vector2.new(1920, 1080)
+	self.TouchHalfButton.Position = UDim2.fromOffset(
+		math.clamp(position.X, 78, viewport.X - 78),
+		math.clamp(position.Y + 54, 28, viewport.Y - 28)
+	)
+	self.TouchHalfTransfer = drag
+	self.TouchHalfButton.Visible = true
+	self.TouchHalfRevision += 1
+	local revision = self.TouchHalfRevision
+	task.delay(2.5, function()
+		if self.TouchHalfRevision == revision then self:_hideTouchHalfAction() end
+	end)
+end
+
 function controller:_createDragGhost(slot, position)
 	local ghost = InventoryDragGhost.Create(InventoryController.ScreenGui, slot, addSlotVisual)
 	ghost.Position = UDim2.fromOffset(position.X, position.Y)
@@ -353,10 +407,13 @@ function controller:_finishDrag(position)
 	local drag = self.DragState
 	if not drag then return end
 	local target, valid = self:_resolveDrop(position)
+	local showTouchHalfAction = drag.IsTouch and drag.DestinationArea ~= nil and drag.Slot.Quantity >= 2
+		and not self.DragGhost and not drag.LongPressTriggered and not drag.LongPressCancelled
 	if self.DragGhost and valid then
 		drag.Callback("SINGLE", target.SlotIndex, target.Area)
 	end
 	self:_cancelDrag()
+	if showTouchHalfAction then self:_showTouchHalfAction(drag, position) end
 end
 
 function controller:_createSlotCard(parent, slot, inventoryId, slotIndex, area, destinationArea, callback)
@@ -403,6 +460,7 @@ function controller:_createSlotCard(parent, slot, inventoryId, slotIndex, area, 
 			callback("FULL_STACK", nil, destinationArea)
 			return
 		end
+		self:_hideTouchHalfAction()
 		self:_cancelDrag()
 		local dragState = {
 			Source = component,
@@ -545,6 +603,7 @@ function controller:_render()
 	if not self.State or not self.Panel.Visible then
 		return
 	end
+	self:_hideTouchHalfAction()
 	self:_cancelDrag()
 	self.SlotComponents = {}
 	self.DropZones = {{
@@ -648,6 +707,7 @@ function controller:_showStation()
 end
 
 function controller:_closeContext()
+	self:_hideTouchHalfAction()
 	self:_cancelDrag()
 	if self.Station and self.State and self.State.StationType == "Factory" then finalFactoryRequest:FireServer("Close", self.Station) end
 	self.Station = nil
