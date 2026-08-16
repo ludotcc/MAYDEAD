@@ -439,8 +439,13 @@ function InventoryService:Start()
 	end)
 
 	Players.PlayerRemoving:Connect(function(player)
-		self.PlayerInventories[player] = nil
 		self._lastFlaskAttempts[player] = nil
+		-- WorldService and WorldSessionService capture the logical inventory during
+		-- PlayerRemoving. Keep it available until every synchronous departure
+		-- handler has had a chance to export the final 28-slot snapshot.
+		task.defer(function()
+			self.PlayerInventories[player] = nil
+		end)
 	end)
 
 	self._request.OnServerEvent:Connect(function(player, action, data)
