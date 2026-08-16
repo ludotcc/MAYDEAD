@@ -429,7 +429,9 @@ function DataService:RenewLock(worldId, token)
 			return current
 		end)
 	end)
-	return ok and renewed
+	if not ok then return false, "Unavailable" end
+	if not renewed then return false, "LockLost" end
+	return true, nil
 end
 
 function DataService:SaveWorld(worldId, token, snapshot, releaseLock)
