@@ -14,6 +14,14 @@ FishingService.__index = FishingService
 
 local REQUEST_NAME = "FishingRequest"
 local STATE_NAME = "FishingState"
+local REQUEST_RATE_PER_SECOND = 12
+local REQUEST_BURST_CAPACITY = 20
+local REQUEST_ACTIONS = {
+	StartCast = true,
+	StopCast = true,
+	FightInput = true,
+	Cancel = true,
+}
 
 local function findNamed(instance, name, className)
 	local found = instance and instance:FindFirstChild(name, true)
@@ -62,6 +70,13 @@ local function isFiniteVector3(value)
 		and math.abs(value.X) < math.huge and math.abs(value.Y) < math.huge and math.abs(value.Z) < math.huge
 end
 
+local function isValidRequest(action, first, second)
+	if action == "StartCast" then return isFiniteVector3(first) and second == nil end
+	if action == "StopCast" then return typeof(first) == "string" and second == nil end
+	if action == "FightInput" then return typeof(first) == "string" and typeof(second) == "boolean" end
+	return first == nil and second == nil
+end
+
 local function logRootVelocity(player, stage)
 	local root = player.Character and player.Character:FindFirstChild("HumanoidRootPart")
 	if not root or not root:IsA("BasePart") then return end
@@ -76,6 +91,7 @@ end
 function FishingService.new()
 	local self = setmetatable({}, FishingService)
 	self._sessions = {}
+	self._requestBudgets = {}
 	self._request = Instance.new("RemoteEvent")
 	self._request.Name = REQUEST_NAME
 	self._request.Parent = ReplicatedStorage
@@ -85,6 +101,22 @@ function FishingService.new()
 	self._fishTemplate = nil
 	self._accumulator = 0
 	return self
+end
+
+function FishingService:_consumeRequestBudget(player)
+	local now = os.clock()
+	local budget = self._requestBudgets[player]
+	if not budget then
+		budget = {Tokens = REQUEST_BURST_CAPACITY, UpdatedAt = now}
+		self._requestBudgets[player] = budget
+	else
+		local elapsed = math.max(0, now - budget.UpdatedAt)
+		budget.Tokens = math.min(REQUEST_BURST_CAPACITY, budget.Tokens + elapsed * REQUEST_RATE_PER_SECOND)
+		budget.UpdatedAt = now
+	end
+	if budget.Tokens < 1 then return false end
+	budget.Tokens -= 1
+	return true
 end
 
 function FishingService:_prepareAssets()
@@ -444,14 +476,17 @@ end
 
 function FishingService:Start()
 	self:_prepareAssets()
-	self._request.OnServerEvent:Connect(function(player, action, ...)
+	self._request.OnServerEvent:Connect(function(player, action, first, second)
 		if player:GetAttribute("SessionStarted") ~= true then return end
+		if typeof(action) ~= "string" or not REQUEST_ACTIONS[action]
+			or not isValidRequest(action, first, second) or not self:_consumeRequestBudget(player)
+		then return end
 		if action == "StartCast" then
-			self:_startCast(player, ...)
+			self:_startCast(player, first)
 		elseif action == "StopCast" then
-			self:_stopCast(player, ...)
+			self:_stopCast(player, first)
 		elseif action == "FightInput" then
-			self:_setFightInput(player, ...)
+			self:_setFightInput(player, first, second)
 		elseif action == "Cancel" then
 			self:_finish(player, "ANNULÉ")
 		end
@@ -460,6 +495,7 @@ function FishingService:Start()
 		local session = self._sessions[player]
 		if session then self:_restoreRodVisual(session) end
 		self._sessions[player] = nil
+		self._requestBudgets[player] = nil
 	end)
 	RunService.Heartbeat:Connect(function(deltaTime)
 		self._accumulator = self._accumulator + deltaTime
