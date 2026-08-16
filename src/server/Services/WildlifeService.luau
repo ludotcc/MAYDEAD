@@ -16,6 +16,17 @@ local function trim(value)
 	return value:match("^%s*(.-)%s*$")
 end
 
+local function isFiniteNumber(value)
+	return typeof(value) == "number" and value == value and value > -math.huge and value < math.huge
+end
+
+local function isFiniteVector3(value)
+	return typeof(value) == "Vector3"
+		and isFiniteNumber(value.X)
+		and isFiniteNumber(value.Y)
+		and isFiniteNumber(value.Z)
+end
+
 local function closestDistance(rootPart, model)
 	local shortest = math.huge
 	for _, descendant in model:GetDescendants() do
@@ -86,6 +97,7 @@ function WildlifeService.new()
 	self._spawnByAnimal = setmetatable({}, {__mode = "k"})
 	self._lastHits = {}
 	self._lastNameRequests = {}
+	self._lastMountInputs = {}
 	self._cheetahAIs = setmetatable({}, {__mode = "k"})
 	self._cheetahCount = 0
 	self._wildCheetahCount = 0
@@ -754,6 +766,7 @@ function WildlifeService:Start()
 	Players.PlayerRemoving:Connect(function(player)
 		self._lastHits[player] = nil
 		self._lastNameRequests[player] = nil
+		self._lastMountInputs[player] = nil
 		for _, ai in self._cheetahAIs do
 			if ai.FollowTargetUserId == player.UserId then ai:SetCommand("Stay") end
 		end
@@ -816,7 +829,13 @@ function WildlifeService:Start()
 		elseif action == "Mount" then self:_mount(player, ai)
 		elseif action == "Dismount" then self:_dismount(player, ai)
 		elseif action == "MountJump" then self:_mountJump(player, ai)
-		elseif action == "MountInput" and typeof(data) == "table" then ai:SetMountInput(player, data.Direction, data.Sprint)
+		elseif action == "MountInput" then
+			if ai.MountedPlayer ~= player or typeof(data) ~= "table" or not isFiniteVector3(data.Direction) then return end
+			local now = os.clock()
+			if now - (self._lastMountInputs[player] or -math.huge) < CheetahConfig.MOUNT_INPUT_MIN_INTERVAL then return end
+			self._lastMountInputs[player] = now
+			ai:SetMountInput(player, data.Direction, data.Sprint)
+			return
 		elseif action == "SetName" then
 			if player.UserId ~= ai.OriginalTamerUserId then return end
 			local now = os.clock()
