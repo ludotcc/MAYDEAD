@@ -334,7 +334,9 @@ end
 function controller:UpdateInventoryDrag(position)
 	local drag = self.DragState
 	if not drag then return end
-	if not self.DragGhost and (position - drag.StartPosition).Magnitude >= DRAG_THRESHOLD_PIXELS then
+	local dragThreshold = drag.Input.UserInputType == Enum.UserInputType.Touch
+		and InventoryConfig.MOBILE_SLOT_MOVE_TOLERANCE or DRAG_THRESHOLD_PIXELS
+	if not self.DragGhost and (position - drag.StartPosition).Magnitude >= dragThreshold then
 		local ghost = InventoryDragGhost.Create(self.ScreenGui, drag.SlotData, function(parent, slotData)
 			local iconId = ItemIconConfig[slotData.ItemId]
 			if iconId and iconId ~= "" then buildItemIcon(parent, iconId) else buildItemFallback(parent, slotData.ItemId) end
