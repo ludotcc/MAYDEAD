@@ -10,6 +10,12 @@ local ItemDefinitions = require(SharedFolder:WaitForChild("Definitions"):WaitFor
 local InventoryService = require(script.Parent:WaitForChild("InventoryService"))
 local SmeltConfig = MetallurgyConfig.Smelt
 local CAMPFIRE_STATE_VERSION = 2
+local STATION_REQUEST_RATE_PER_SECOND = 20
+local STATION_REQUEST_BURST_CAPACITY = 30
+local STATION_REQUEST_ACTIONS = {
+	TransferToStation = true,
+	TransferToPlayer = true,
+}
 
 local StationService = {}
 StationService.__index = StationService
@@ -28,6 +34,27 @@ local function cloneSlots(slots)
 		clone[index] = {ItemId = slot.ItemId, Quantity = slot.Quantity}
 	end
 	return clone
+end
+
+local function isPositiveInteger(value)
+	return typeof(value) == "number"
+		and value > -math.huge and value < math.huge
+		and value == math.floor(value) and value >= 1
+end
+
+local function isValidTransferRequest(action, request)
+	if typeof(request) ~= "table"
+		or typeof(request.Area) ~= "string"
+		or (request.Mode ~= "SINGLE" and request.Mode ~= "FULL_STACK" and request.Mode ~= "HALF_STACK")
+	then
+		return false
+	end
+	if action == "TransferToStation" then
+		return isPositiveInteger(request.PlayerSlotIndex)
+			and (request.StationSlotIndex == nil or isPositiveInteger(request.StationSlotIndex))
+	end
+	return isPositiveInteger(request.StationSlotIndex)
+		and (request.PlayerSlotIndex == nil or isPositiveInteger(request.PlayerSlotIndex))
 end
 
 local function validateSlots(savedSlots, expectedCount)
@@ -203,6 +230,7 @@ function StationService.new()
 	local self = setmetatable({}, StationService)
 	self._stations = setmetatable({}, {__mode = "k"})
 	self._viewers = setmetatable({}, {__mode = "k"})
+	self._requestBudgets = {}
 	self._open = Instance.new("RemoteEvent")
 	self._open.Name = "StationOpened"
 	self._open.Parent = ReplicatedStorage
@@ -214,6 +242,25 @@ function StationService.new()
 	self._request.Parent = ReplicatedStorage
 	self.StorageChanged = Instance.new("BindableEvent")
 	return self
+end
+
+function StationService:_consumeRequestBudget(player)
+	local now = os.clock()
+	local budget = self._requestBudgets[player]
+	if not budget then
+		budget = {Tokens = STATION_REQUEST_BURST_CAPACITY, UpdatedAt = now}
+		self._requestBudgets[player] = budget
+	else
+		local elapsed = math.max(0, now - budget.UpdatedAt)
+		budget.Tokens = math.min(
+			STATION_REQUEST_BURST_CAPACITY,
+			budget.Tokens + elapsed * STATION_REQUEST_RATE_PER_SECOND
+		)
+		budget.UpdatedAt = now
+	end
+	if budget.Tokens < 1 then return false end
+	budget.Tokens -= 1
+	return true
 end
 
 local function getStationInteractionPosition(station)
@@ -848,8 +895,12 @@ function StationService:Start(worldService)
 		if player:GetAttribute("SessionStarted") ~= true
 			or (worldService and not worldService:IsRuntimeMember(player))
 		then return end
+		if typeof(action) ~= "string" or not STATION_REQUEST_ACTIONS[action]
+			or typeof(station) ~= "Instance" or not isValidTransferRequest(action, request)
+			or not self:_consumeRequestBudget(player)
+		then return end
 		local data = self._stations[station]
-		if not data or not self:_isPlayerNear(player, station) or typeof(request) ~= "table" then
+		if not data or station:GetAttribute("StationId") ~= data.Id or not self:_isPlayerNear(player, station) then
 			return
 		end
 		if data.Type == "Factory" and typeof(station:GetAttribute("StructureId")) ~= "string" then return end
@@ -862,6 +913,7 @@ function StationService:Start(worldService)
 	end)
 
 	Players.PlayerRemoving:Connect(function(player)
+		self._requestBudgets[player] = nil
 		for _, viewers in self._viewers do
 			viewers[player] = nil
 		end
