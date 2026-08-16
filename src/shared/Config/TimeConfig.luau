@@ -1,0 +1,4 @@
+return {
+	DAY_DURATION = 600,
+	NIGHT_DURATION = 240,
+}

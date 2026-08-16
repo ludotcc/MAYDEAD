@@ -1,1 +1,47 @@
-print("SURVIVAL ISLAND - ROJO CONNECTE")
+local ServerScriptService = game:GetService("ServerScriptService")
+
+local ServerFolder = ServerScriptService:WaitForChild("Server")
+local ServicesFolder = ServerFolder:WaitForChild("Services")
+
+-- CraftingService creates OpenWorkbench during require. WorldService now
+-- requires BuildingService for persistence, and BuildingService consumes that
+-- RemoteEvent in its constructor, so this dependency must be constructed first.
+local CraftingService = require(ServicesFolder:WaitForChild("CraftingService"))
+local WorldService = require(ServicesFolder:WaitForChild("WorldService"))
+local WorldSessionService = require(ServicesFolder:WaitForChild("WorldSessionService"))
+local TimeService = require(ServicesFolder:WaitForChild("TimeService"))
+local SurvivalService = require(ServicesFolder:WaitForChild("SurvivalService"))
+local InventoryService = require(ServicesFolder:WaitForChild("InventoryService"))
+local ResourceService = require(ServicesFolder:WaitForChild("ResourceService"))
+local StationService = require(ServicesFolder:WaitForChild("StationService"))
+local CropService = require(ServicesFolder:WaitForChild("CropService"))
+local WildCropService = require(ServicesFolder:WaitForChild("WildCropService"))
+local WildlifeService = require(ServicesFolder:WaitForChild("WildlifeService"))
+local BuildingService = require(ServicesFolder:WaitForChild("BuildingService"))
+local FactoryService = require(ServicesFolder:WaitForChild("FactoryService"))
+local CampService = require(ServicesFolder:WaitForChild("CampService"))
+local FishingService = require(ServicesFolder:WaitForChild("FishingService"))
+local WorldDropService = require(ServicesFolder:WaitForChild("WorldDropService"))
+local BoatService = require(ServicesFolder:WaitForChild("BoatService"))
+
+print("[MAYDEAD] Server starting...")
+
+WorldService:Start()
+BuildingService:Start(CraftingService:GetOpenWorkbenchRemote())
+WorldSessionService:Start()
+TimeService:Start()
+SurvivalService:Start()
+InventoryService:Start()
+WorldDropService:Start()
+FishingService:Start()
+CampService:Start()
+ResourceService:Start()
+StationService:Start(WorldService)
+CropService:Start()
+WildCropService:Start()
+WildlifeService:Start()
+CraftingService:Start()
+FactoryService:Start(WorldService)
+BoatService:Start()
+
+print("[MAYDEAD] Core gameplay services started.")

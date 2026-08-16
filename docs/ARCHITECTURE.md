@@ -1766,7 +1766,29 @@ Une modification d'architecture importante doit :
 
 ------------------------------------------------------------------------
 
+## PRIVATE SHARED WORLDS + MEMBERSHIP V1
+
+- Le record `world:<WorldId>` de `MAYDEAD_WorldData_{DEV|PROD}_V1` reste la vérité d'accès via `OwnerUserId` et `AuthorizedMembers[stringUserId] = true`.
+- Le même `MAYDEAD_WorldIndex_{DEV|PROD}_V1` reçoit des records légers `member:<UserId>` contenant `PendingInvites` et `JoinedWorlds`. Cet index de navigation est réparé lazy depuis le record monde; aucun scan global ni nouveau namespace n'est introduit.
+- `owner:<UserId>.Slots`, `member:<UserId>.JoinedWorlds` et `member:<UserId>.PendingInvites` restent des collections indépendantes. Les mutations emploient `UpdateAsync` en préservant le reste du record.
+- `world:<WorldId>` reste la vérité d'autorisation : seul `OwnerUserId` ou une entrée dans `AuthorizedMembers` prouve l'accès. Une invitation ne modifie jamais cette liste avant son acceptation serveur.
+- L'acceptation met d'abord à jour atomiquement le record monde, puis l'index membre secondaire; une divergence est réparable depuis la vérité monde. Refuser ne retire que l'invitation.
+- Aucun lease/session lock n'est acquis lors de l'envoi ou de l'acceptation. L'acquisition reste réservée au vrai `Join`/`Load`.
+- L'état runtime d'un serveur peut héberger un monde, mais il n'est exposé comme actif qu'aux joueurs admis dans ce monde; les autres joueurs du menu sont routés vers le monde qu'ils créent ou choisissent.
+- L'acceptation réserve d'abord l'un des 3 slots rejoints avec `UpdateAsync`, ajoute ensuite le membre au record monde avec contrôle 6/6, puis finalise l'index. Une panne d'index après membership ne rollback pas le monde et reste réparable.
+- `SaveWorld` conserve toujours l'`AuthorizedMembers` courant du DataStore afin qu'un snapshot mémoire actif ne puisse pas écraser une modification membership concurrente.
+- `SessionService` conserve son lease 120 secondes, son renouvellement et son token de fencing. Un monde actif est rejoint via son `JobId`; un monde inactif peut être lancé par tout membre autorisé dans un serveur réservé.
+- `PlayerStates` reste indexé par UserId et distinct des états uniques du monde. `WorldState.Structures`, `StructuresVersion`, `StructureId` et `OwnerUserId` historique ne sont pas transformés.
+
 # FIN DU DOCUMENT
+
+## FINAL GAMEPLAY LOOP V1
+
+Statut : `À TESTER STUDIO / ROBLOX PLAYER`.
+
+`FactoryService` étend l'industrie existante avec le type `Factory`. `StationService` reste l'unique propriétaire des transferts et de l'inventaire partagé. Le serveur revalide la distance, l'état et les ressources avant une transition atomique `Idle -> Building`. La progression sauvegarde un temps écoulé actif, sans progression hors ligne, puis passe une seule fois à `Completed`.
+
+Le modèle final est cloné depuis `ServerStorage.AssetImports["Naval Seaplane"]`, orienté relativement à `Factory.ItemOutput` avec `PivotTo`. `WorldState.NavalSeaplaneCompleted`, `FinalPlaneSpawned` et `FinalPlanePivot` rendent le spawn idempotent et indépendant d'une éventuelle reconstruction de la Factory. Tous ces champs sont optionnels pour les anciens mondes.
 
 **MAYDEAD --- Architecture Technique V1**
 

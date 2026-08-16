@@ -652,24 +652,27 @@ Transformer le prototype en vraie partie persistante.
 
 ## Tâches
 
--   [ ] `DataService`.
--   [ ] schéma versionné.
--   [ ] WorldId.
--   [ ] données joueur.
--   [ ] données monde.
--   [ ] autosave.
--   [ ] sauvegarde fermeture.
--   [ ] retry contrôlé.
+-   [x] `DataService` — `VALIDÉ STUDIO`.
+-   [x] schéma versionné — `StructuresVersion = 2`, lecture de la version précédente conservée, `VALIDÉ STUDIO`.
+-   [x] WorldId — isolation monde A / monde B `VALIDÉE STUDIO`.
+-   [x] données joueur — inventaire et QuickSlots `VALIDÉS STUDIO`.
+-   [x] données monde — âge, progression, constructions et états internes `VALIDÉS STUDIO`.
+-   [x] autosave — intervalle de 120 secondes `VALIDÉ STUDIO`.
+-   [x] sauvegarde fermeture — `PlayerRemoving`, dernier joueur et `BindToClose` `VALIDÉS STUDIO`.
+-   [x] retry contrôlé — protections DataStore et conservation du dernier snapshot réussi `VALIDÉES STUDIO`.
 -   [ ] migrations.
--   [ ] restauration constructions.
--   [ ] restauration coffres.
--   [ ] restauration âge.
--   [ ] restauration progression.
+-   [x] restauration constructions — géométrie, identifiants, rotation, relations de snapping et isolation `VALIDÉS STUDIO`.
+-   [x] restauration coffres — Chest 30 slots et CraftingTable 12 slots `VALIDÉS STUDIO`.
+-   [x] restauration âge — `VALIDÉE STUDIO`.
+-   [x] restauration progression — monde et GardenPlot sans progression hors ligne `VALIDÉE STUDIO`.
 
 ## Validation
 
 Plusieurs cycles de fermeture/réouverture ne provoquent aucune perte
 anormale.
+
+World Persistence V3 : `VALIDÉ STUDIO`. Prochaine étape :
+`VALIDATION ROBLOX PLAYER MULTIJOUEUR`.
 
 ------------------------------------------------------------------------
 
@@ -1489,6 +1492,12 @@ améliorée.
 
 ------------------------------------------------------------------------
 
+## Metallurgy V1
+
+-   [ ] Valider Studio : CopperOre, RawMetal et GoldOre avec la hiérarchie 6/8/12 coups.
+-   [ ] Valider Studio : Smelt, 12 slots filtrés, Wood fuel, trois recettes de lingots et effets actifs uniquement pendant la fonte.
+-   [ ] Valider Studio : sauvegarde/rechargement Persistence V3 du Smelt, sans progression hors ligne ni duplication.
+
 # 62. GRAND CHANTIER 55 --- ÉQUILIBRAGE
 
 **Priorité : P0 avant publication**
@@ -1696,7 +1705,26 @@ impossible à publier.
 
 ------------------------------------------------------------------------
 
+## PRIVATE SHARED WORLDS + MEMBERSHIP V1
+
+Statut : `À TESTER STUDIO / PROD VALIDATION REQUIRED`
+
+- Valider invitations, limites 3/3 et 6/6, réparation d'index et révocation en multijoueur.
+- Valider routage serveur propriétaire absent, join d'une instance active et fencing concurrent.
+- Valider la page Mondes rejoints sur PC, tablette et mobile avec l'asset officiel.
+- Effectuer une validation sur une copie représentative d'un monde production avant publication.
+
 # FIN DU DOCUMENT
+
+## FINAL GAMEPLAY LOOP V1
+
+Statut : `À TESTER STUDIO / ROBLOX PLAYER`.
+
+- [x] intégration code Boat et Factory aux crafts/placeables ;
+- [x] production serveur autoritaire et persistence du Naval Seaplane ;
+- [x] continuation après objectif et records monde ;
+- [ ] audit des assets et pilotage dans Roblox Studio ;
+- [ ] tests multijoueur, reload intermédiaire et Roblox Player production.
 
 **MAYDEAD --- Roadmap V1**
 

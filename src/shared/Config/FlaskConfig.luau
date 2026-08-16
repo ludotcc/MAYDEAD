@@ -1,0 +1,4 @@
+return {
+	MAX_WATER_CHARGES = 2,
+	INITIAL_WATER_CHARGES = 0,
+}

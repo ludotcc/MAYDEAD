@@ -309,6 +309,25 @@ Il n'existe pas de système de poids en V1.
 
 Les stockages fonctionnent par slots limités.
 
+### Règle officielle de transfert joueur ↔ station
+
+- Un clic simple ne transfère aucun objet.
+- Un glisser-déposer réel transfère exactement une unité après un seuil de déplacement de 6 pixels.
+- Maj + clic gauche transfère immédiatement la pile complète, dans la limite de la capacité disponible.
+- Maj + clic droit transfère la moitié de la pile (`floor(Q / 2)`), sans transfert pour une pile de quantité 1.
+- Un clic gauche maintenu environ 0,45 seconde sans atteindre le seuil de drag transfère la pile complète.
+- Un dépôt sur un slot compatible ou sur le panneau de destination utilise le placement automatique disponible.
+- Un dépôt hors interface ou sur une destination incompatible annule le transfert.
+- Le serveur valide la source, la destination, la quantité, la compatibilité et la capacité avant toute mutation.
+
+### Interaction officielle inventaire / accès rapide
+
+- Le joueur possède 28 vrais slots : 20 principaux et 8 slots d'accès rapide.
+- Les indices 21 à 28 contiennent de vrais `ItemStack`, sélectionnés avec les touches 1 à 8 sur PC.
+- Main ↔ Quick et Main ↔ Main : le drag déplace le stack complet, fusionne un ItemId identique ou échange deux ItemId différents.
+- Aucun raccourci virtuel ni aucune copie de stack n'est créé.
+- Joueur ↔ station reste un transfert externe : drag pour une unité, Maj + clic gauche ou clic gauche long pour la pile complète, Maj + clic droit pour sa moitié.
+
 Sont concernés notamment :
 
 -   coffres ;
@@ -947,6 +966,32 @@ Exemple de philosophie :
 ours.**
 
 Les espèces exactes seront définies progressivement.
+
+Première espèce validée pour la V1 : le **Bison**. Il possède 100 PV,
+subit 25 dégâts par coup de hache ou 20 par coup de pioche, et attribue
+RawMeat x6 au joueur portant le coup final. Son respawn de test est de
+300 secondes sur son point d'apparition d'origine.
+
+Le **Cheetah / Guépard sauvage V1** est une rencontre rare limitée à un
+individu actif. Il reste passif tant qu'il n'est pas agressé, refuse l'eau
+et devient extrêmement dangereux grâce à sa mobilité lorsqu'un joueur
+l'attaque. Valeurs de test : 1500 PV, attaque 28–35, attaque spéciale 45,
+respawn 900 secondes et `RawMeat x20–30`. L'apprivoisement est prévu en V2,
+le compagnon en V3 et la monture en V4 ; ces phases ne sont pas implémentées.
+
+L'apprivoisement V1 du guépard utilise des unités physiques de `RawMeat`
+déposées par un joueur. Le guépard sauvage attend une zone sûre, approche
+prudemment puis consomme une viande. Une nourriture valide accorde 8 à 12
+points de confiance au joueur qui l'a déposée, avec un délai de 90 secondes
+entre deux gains. La confiance va de 0 à 100 et une attaque du joueur engagé
+retire 25 points. À 100, le guépard est marqué apprivoisé par ce joueur ; les
+systèmes de monture, faim, inventaire et défense du propriétaire restent futurs.
+
+Après adoption, le compagnon possède quatre slots réservés à `RawMeat`, une
+faim lente, les commandes Suivre/Rester et une endurance de monture. Il ne
+nage jamais. Un compagnon mort ne fournit pas le gros loot sauvage et sa mort
+est persistée ; un nouveau guépard sauvage pourra ensuite apparaître selon le
+cycle wildlife normal. La V2 reste limitée à un guépard actif par monde.
 
 ### 37.3 Récompenses
 
@@ -1626,7 +1671,47 @@ mécanique.
 
 ------------------------------------------------------------------------
 
+## ÉQUILIBRAGE V1 DE TEST — SURVIE DEPUIS ZÉRO
+
+- Départ : inventaire vide, 20 slots principaux + 8 slots rapides réels.
+- Tree : mains nues = récolte immédiate Wood x1 ; Axe 25 dégâts, Wood x8 ; respawn 60 s.
+- Stone : mains nues = récolte immédiate Stone x1 ; Pickaxe 25 dégâts, Stone x6 ; respawn 75 s.
+- Metal : 125 PV, Pickaxe 25, RawMetal x4, respawn 120 s.
+- Crystal : 150 PV, Pickaxe 25, Crystal x3, respawn 180 s.
+- Tomato : Hunger +15, Energy +10 ; RawMeat : Hunger +20, Energy +10, Health -20 ; CookedMeat : Hunger +40, Energy +45.
+- Bison : 100 PV, Axe 25 / Pickaxe 20, RawMeat x6, respawn 300 s.
+- Drains par seconde : Hunger 0,035 ; Thirst 0,05 ; Energy 0,025.
+- Régénération : Health +1/s si Hunger > 25 et Thirst > 25.
+- Dégâts : famine 0,35/s ; déshydratation 0,5/s ; noyade inchangée.
+
+Statut : **À TESTER EN CONDITIONS RÉELLES** avant tout nouvel ajustement.
+
+## MONDES PRIVÉS PARTAGÉS ET MEMBERSHIP V1
+
+- Un joueur possède au maximum 3 mondes et peut rejoindre au maximum 3 autres mondes.
+- Chaque monde est privé et limité à 6 membres officiels, propriétaire inclus. Il n'existe aucun navigateur public; l'accès se fait uniquement par invitation d'un ami.
+- `OwnerUserId` reste permanent. Seul le propriétaire invite, retire des membres, renomme ou supprime le monde; un membre standard peut quitter volontairement le monde.
+- Un membre autorisé peut lancer le monde sans le propriétaire. Une seule instance serveur peut détenir le monde à la fois.
+- Structures, coffres, stations, Campfire, Smelt, Factory, cultures, ressources et Companion appartiennent au monde partagé. Tous les membres admis peuvent les utiliser et déconstruire les structures, tandis que les inventaires joueurs restent individuels.
+- Le menu distingue les 3 mondes possédés des 3 « Mondes rejoints » et affiche les invitations privées, les membres et l'état de session.
+- Une invitation en attente n'est jamais une adhésion. Elle ne consomme ni emplacement possédé ni emplacement rejoint, ne change pas `AuthorizedMembers` et n'empêche pas le joueur de créer ou rejoindre ses propres mondes.
+- L'adhésion exige une acceptation serveur explicite. Les mondes possédés, les mondes rejoints et les invitations en attente sont trois catégories indépendantes.
+- Toute invitation en attente est signalée dès la première page du menu principal, sans bloquer la navigation ni lancer automatiquement le monde après acceptation.
+
 # FIN DU DOCUMENT
+
+## FINAL GAMEPLAY LOOP V1
+
+Statut : `À TESTER STUDIO / ROBLOX PLAYER`.
+
+- Le `Boat` est fabriqué à la Table de craft avec `Wood x30`, `MetalIngot x12` et `CopperIngot x6`, puis placé comme véhicule sans altération de ses scripts, contraintes ou réglages physiques.
+- Le `Boat` est exclusivement placeable sur la surface de l'eau Terrain; ses principaux points de support doivent tous rester au-dessus de l'eau.
+- En monture Cheetah sur PC, le clic gauche commande le saut. `E` conserve le démontage explicite; Espace n'est pas une commande de saut du Cheetah.
+- La `Factory` finale est fabriquée à la Table de craft avec `MetalPanelStack x12`, `MetalIngot x20` et `CopperIngot x10`.
+- La Factory est une station partagée du monde. Son inventaire accepte uniquement `MetalPanelStack` et `PlasticPanelStack` avec les transferts officiels joueur/station.
+- Le `Naval Seaplane` est produit uniquement dans la Factory avec `MetalPanelStack x40` et `PlasticPanelStack x30`, en 60 secondes de présence active du monde.
+- Un seul Naval Seaplane final est validé par monde. L'objectif principal terminé ne ferme ni ne supprime le monde : survie, construction, exploration et vieillissement continuent.
+- Le record d'évasion conserve le plus faible Age. Le record de longévité conserve le plus grand Age atteint et peut progresser après la fin principale.
 
 **MAYDEAD --- Game Design Document V1**
 
