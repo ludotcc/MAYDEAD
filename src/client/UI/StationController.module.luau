@@ -937,8 +937,9 @@ function controller:Start()
 	end)
 	stationStateChanged.OnClientEvent:Connect(function(station, state)
 		if station == self.Station then
-			self:_cancelDrag()
 			self.State = state
+			if self.DragState then return end
+			self:_cancelDrag()
 			self:_render()
 		end
 	end)
