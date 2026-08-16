@@ -68,6 +68,8 @@ function controller:_build()
 	self.Gui = gui
 
 	local feedback = createText(gui, "", UDim2.fromOffset(420, 42), UDim2.new(0.5, -210, 0.2, 0), Enum.Font.GothamBold, 18)
+	feedback.AnchorPoint = Vector2.new(0.5, 0)
+	feedback.Position = UDim2.fromScale(0.5, 0.2)
 	feedback.BackgroundColor3 = Color3.fromRGB(10, 15, 22)
 	feedback.BackgroundTransparency = 0.12
 	feedback.Visible = false
@@ -78,7 +80,8 @@ function controller:_build()
 	local castPanel = Instance.new("Frame")
 	castPanel.Name = "CastPanel"
 	castPanel.Size = UDim2.fromOffset(440, 112)
-	castPanel.Position = UDim2.new(0.5, -220, 0.74, -56)
+	castPanel.AnchorPoint = Vector2.new(0.5, 0.5)
+	castPanel.Position = UDim2.fromScale(0.5, 0.74)
 	castPanel.BackgroundColor3 = Color3.fromRGB(10, 15, 22)
 	castPanel.BackgroundTransparency = 0.08
 	castPanel.Visible = false
@@ -122,7 +125,8 @@ function controller:_build()
 	local fightPanel = Instance.new("Frame")
 	fightPanel.Name = "FightPanel"
 	fightPanel.Size = UDim2.fromOffset(250, 430)
-	fightPanel.Position = UDim2.new(1, -280, 0.5, -215)
+	fightPanel.AnchorPoint = Vector2.new(1, 0.5)
+	fightPanel.Position = UDim2.new(1, -30, 0.5, 0)
 	fightPanel.BackgroundColor3 = Color3.fromRGB(10, 15, 22)
 	fightPanel.BackgroundTransparency = 0.06
 	fightPanel.Visible = false
@@ -173,6 +177,21 @@ function controller:_build()
 	local fightInstruction = createText(fightPanel, fightInputText, UDim2.new(1, -16, 0, 24), UDim2.new(0, 8, 1, -38), Enum.Font.GothamMedium, 10)
 	fightInstruction.TextColor3 = Color3.fromRGB(154, 176, 193)
 	self.FightPanel = fightPanel
+	local feedbackScale = Instance.new("UIScale")
+	feedbackScale.Parent = feedback
+	local castScale = Instance.new("UIScale")
+	castScale.Parent = castPanel
+	local fightScale = Instance.new("UIScale")
+	fightScale.Parent = fightPanel
+	local function updateResponsiveScale()
+		local camera = workspace.CurrentCamera
+		local viewport = camera and camera.ViewportSize or Vector2.new(1920, 1080)
+		feedbackScale.Scale = math.clamp((viewport.X - 24) / 420, 0.65, 1)
+		castScale.Scale = math.clamp(math.min((viewport.X - 24) / 440, (viewport.Y - 24) / 112), 0.65, 1)
+		fightScale.Scale = math.clamp(math.min((viewport.X - 24) / 250, (viewport.Y - 24) / 430), 0.65, 1)
+	end
+	updateResponsiveScale()
+	if workspace.CurrentCamera then workspace.CurrentCamera:GetPropertyChangedSignal("ViewportSize"):Connect(updateResponsiveScale) end
 end
 
 function controller:_showFeedback(text, duration)
