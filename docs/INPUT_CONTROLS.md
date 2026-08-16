@@ -126,10 +126,10 @@ décrit le contrat, sans devenir une seconde configuration.
 | Cheetah : saut monté | Clic gauche | JumpButton via `JumpRequest` | Idem | `CheetahCompanionController` | À TESTER EN STUDIO |
 | Cheetah : apprivoisement | RawMeat sélectionnée puis clic gauche pour déposer | `NOURRIR` contextuel | Idem | `RawMeatDropController`, `WorldDropRequest` | VALIDÉ |
 | Factory : ouvrir | Interaction monde | Prompt tactile | Prompt tactile | Factory / station | NATIF ROBLOX |
-| Factory : transférer | Règles station | Règles station | Règles station | `StationController` | À TESTER EN STUDIO |
-| Factory : assembler | Bouton UI | Bouton `Activated` | Bouton `Activated` | `FactoryStatusController`, `StationController` | À TESTER EN STUDIO |
-| Factory : fermer | `B`, Échap ou bouton | Bouton | Bouton | `FactoryStatusController` | À TESTER EN STUDIO |
-| Bateau : accélérer / tourner | Contrôles `VehicleSeat` | Contrôles de siège natifs attendus | Idem | `BoatService` | À TESTER EN STUDIO |
+| Factory : transférer | Règles station | Règles station | Règles station | `StationController` | VALIDÉ |
+| Factory : assembler | Bouton UI | Bouton `Activated` | Bouton `Activated` | `FactoryStatusController`, `StationController` | VALIDÉ |
+| Factory : fermer | `B`, Échap ou bouton | Bouton | Bouton | `FactoryStatusController` | VALIDÉ |
+| Bateau : accélérer / tourner | Contrôles `VehicleSeat` | Contrôles de siège natifs | Idem | `BoatService` | VALIDÉ |
 | Agriculture : planter / récolter | `ProximityPrompt` | Prompt tactile | Prompt tactile | `CropService` | NATIF ROBLOX |
 | Menus monde | Boutons et TextBox | Boutons et clavier virtuel | Idem | `MainMenuController` | À TESTER EN STUDIO |
 
@@ -164,9 +164,9 @@ même Remote et les mêmes validations serveur.
 ### Bateau
 
 Le code MAYDEAD lit `VehicleSeat.ThrottleFloat` et `SteerFloat`. Aucun
-contrôleur bateau mobile spécifique n'est présent. Le comportement téléphone
-et tablette dépend donc des contrôles de siège Roblox et reste à tester dans
-Studio sur les profils d'appareil concernés.
+contrôleur bateau mobile spécifique n'est présent. Le comportement PC,
+téléphone et tablette repose sur les contrôles de siège Roblox et a été validé
+par le Game Director dans le chantier final Boat / Naval Seaplane.
 
 ------------------------------------------------------------------------
 

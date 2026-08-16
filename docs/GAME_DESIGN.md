@@ -1702,7 +1702,7 @@ Statut : **À TESTER EN CONDITIONS RÉELLES** avant tout nouvel ajustement.
 
 ## FINAL GAMEPLAY LOOP V1
 
-Statut : `À TESTER STUDIO / ROBLOX PLAYER`.
+Statut : `VALIDÉ PAR LE GAME DIRECTOR`.
 
 - Le `Boat` est fabriqué à la Table de craft avec `Wood x30`, `MetalIngot x12` et `CopperIngot x6`, puis placé comme véhicule sans altération de ses scripts, contraintes ou réglages physiques.
 - Le `Boat` est exclusivement placeable sur la surface de l'eau Terrain; ses principaux points de support doivent tous rester au-dessus de l'eau.

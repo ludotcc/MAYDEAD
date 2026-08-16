@@ -1707,25 +1707,25 @@ impossible à publier.
 
 ## PRIVATE SHARED WORLDS + MEMBERSHIP V1
 
-Statut : `À TESTER STUDIO / PROD VALIDATION REQUIRED`
+Statut : `VALIDÉ PAR LE GAME DIRECTOR`
 
-- Valider invitations, limites 3/3 et 6/6, réparation d'index et révocation en multijoueur.
-- Valider routage serveur propriétaire absent, join d'une instance active et fencing concurrent.
-- Valider la page Mondes rejoints sur PC, tablette et mobile avec l'asset officiel.
-- Effectuer une validation sur une copie représentative d'un monde production avant publication.
+- [x] Invitations, limites 3/3 et 6/6, réparation d'index et révocation validées en multijoueur.
+- [x] Routage serveur propriétaire absent, join d'une instance active et fencing concurrent validés.
+- [x] Page Mondes rejoints validée sur les plateformes couvertes par le chantier.
+- [x] Validation Game Director obtenue sur le périmètre production prévu.
 
 # FIN DU DOCUMENT
 
 ## FINAL GAMEPLAY LOOP V1
 
-Statut : `À TESTER STUDIO / ROBLOX PLAYER`.
+Statut : `VALIDÉ PAR LE GAME DIRECTOR`.
 
 - [x] intégration code Boat et Factory aux crafts/placeables ;
 - [x] production serveur autoritaire et persistence du Naval Seaplane ;
 - [x] exclusion serveur des assemblages finaux concurrents entre plusieurs FinalFactory ;
 - [x] continuation après objectif et records monde ;
-- [ ] audit des assets et pilotage dans Roblox Studio ;
-- [ ] tests multijoueur, reload intermédiaire et Roblox Player production.
+- [x] audit des assets et pilotage dans Roblox Studio ;
+- [x] tests multijoueur, reload intermédiaire et Roblox Player production.
 
 ## CLÔTURE AUDIT PRODUCTION
 
@@ -1736,11 +1736,12 @@ Statut : `À TESTER STUDIO / ROBLOX PLAYER`.
 - contrôles mobiles P1/P2 documentés comme `VALIDÉ` dans `INPUT_CONTROLS.md` ;
 - réduction des logs production sans suppression d'asset ;
 - YearsOnIsland et cycle 17 minutes, y compris compatibilité des sauvegardes historiques.
+- mondes privés partagés, scénarios DataStore/SessionLock et réservation membership atomique 3/3 validés par le Game Director ;
+- Boat, Naval Seaplane et FinalFactory validés par le Game Director après correction de la concurrence d'assemblage par `9040ede` ;
+- dernier P1 connu du grand audit clôturé.
 
-### OUVERT
+### P2 / POST-PUBLICATION OUVERT
 
-- validations multijoueur/production des mondes privés partagés et scénarios DataStore concurrents ;
-- validation finale Boat/Naval Seaplane avec les assets Studio réels, deux joueurs et reload ;
 - validations visuelles et responsive encore explicitement marquées `À TESTER`.
 
 ### FUTUR

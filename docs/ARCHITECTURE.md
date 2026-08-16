@@ -1795,7 +1795,7 @@ Une modification d'architecture importante doit :
 
 ## FINAL GAMEPLAY LOOP V1
 
-Statut : `À TESTER STUDIO / ROBLOX PLAYER`.
+Statut : `VALIDÉ PAR LE GAME DIRECTOR`.
 
 `FactoryService` étend l'industrie existante avec le type `Factory`. `StationService` reste l'unique propriétaire des transferts et de l'inventaire partagé. Le serveur revalide la distance, l'état et les ressources avant une transition atomique `Idle -> Building`. La progression sauvegarde un temps écoulé actif, sans progression hors ligne, puis passe une seule fois à `Completed`.
 

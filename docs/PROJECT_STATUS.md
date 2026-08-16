@@ -1356,7 +1356,7 @@ jusqu'au :
 
 ## FINAL FACTORY INTERACTION HOTFIX V1
 
-Statut : `À TESTER STUDIO / ROBLOX PLAYER`.
+Statut : `VALIDÉ PAR LE GAME DIRECTOR`.
 
 - Cause LootCard : `_createCard` bouclait tant que plus de trois cartes existaient, mais `_removeCard` ne retirait la carte de la file qu'après son tween; les itérations suivantes ciblaient indéfiniment la même carte déjà `Removing`. Le retrait de file est désormais synchrone et l'animation reste asynchrone.
 - Cause interaction : le prompt utilisait `Factory.InteractionPoint`, tandis que `StationService` validait la distance contre le pivot du grand modèle. La validation serveur utilise désormais `InteractionPoint` (`Attachment.WorldPosition` ou `BasePart.Position`) avec fallback au pivot.
@@ -1367,7 +1367,7 @@ Statut : `À TESTER STUDIO / ROBLOX PLAYER`.
 
 ## FINAL FACTORY INVENTORY TRANSFER V1
 
-Statut : `À TESTER STUDIO / ROBLOX PLAYER`.
+Statut : `VALIDÉ PAR LE GAME DIRECTOR`.
 
 - La FinalFactory réutilise `StationService` et `StationController` pour les transferts joueur/station existants : drag d'une unité, pile complète, demi-pile, clic long et gestes tactiles.
 - Son inventaire partagé possède deux slots dédiés : `MetalPanelStack` puis `PlasticPanelStack`, avec une capacité de 50 unités par slot.
@@ -1378,7 +1378,7 @@ Statut : `À TESTER STUDIO / ROBLOX PLAYER`.
 
 ## FINAL FACTORY STORAGE / ASSEMBLE HOTFIX V4
 
-Statut : `À TESTER STUDIO + ROBLOX PLAYER`.
+Statut : `VALIDÉ PAR LE GAME DIRECTOR`.
 
 - Le clic `ASSEMBLER` et son Remote étaient déjà fonctionnels ; le serveur recevait la bonne `StructureId`, mais le diagnostic observé lisait encore `Metal=0` et `Plastic=0`.
 - `StationService.data.Slots`, indexé par l'instance portant la `StructureId`, est l'unique stockage serveur de la FinalFactory. Les transferts joueur ↔ Factory, le snapshot UI et `FactoryService:_startFinalBuild` utilisent ce même état autoritaire.
@@ -1388,7 +1388,7 @@ Statut : `À TESTER STUDIO + ROBLOX PLAYER`.
 
 ## FINAL FACTORY ASSEMBLE BUTTON REGRESSION FIX V5
 
-Statut : `À TESTER STUDIO`.
+Statut : `VALIDÉ PAR LE GAME DIRECTOR`.
 
 - Cause : le rendu V4 ne synchronisait que `TextButton.Active` avec un calcul local dépendant du snapshot, tandis que `GuiButton.Interactable` n'était pas piloté explicitement. Un rendu initial sans snapshot pouvait laisser l'état d'entrée du bouton désactivé malgré un snapshot ultérieur valide.
 - L'unique `FactoryAssembleButton` est créé une fois dans `_build()` et conserve son unique connexion `Activated`, compatible souris, tactile et manette, pendant tous les renders et toutes les ouvertures.
@@ -1399,7 +1399,7 @@ Statut : `À TESTER STUDIO`.
 
 ## NAVAL SEAPLANE OUTPUT ALIGNMENT FIX V5
 
-Statut : `À TESTER STUDIO`.
+Statut : `VALIDÉ PAR LE GAME DIRECTOR`.
 
 - `FinalFactory.ItemOutput` reste l'unique repère de sortie. L'orientation finale utilise son repère local avec un offset Y de `+90°`; aucune orientation monde n'est codée en dur.
 - Le clone est d'abord placé avec son orientation finale, puis sa bounding box orientée est mesurée. Son point bas réel est aligné sur la face supérieure d'`ItemOutput` avec un epsilon vertical de `0,05` stud.
@@ -1410,7 +1410,7 @@ Statut : `À TESTER STUDIO`.
 
 ## NAVAL SEAPLANE TRUE CONVEYOR GROUNDING FIX V6
 
-Statut : `À TESTER STUDIO`.
+Statut : `VALIDÉ PAR LE GAME DIRECTOR`.
 
 - Le yaw final remplace celui de V5 et vaut désormais `180°` dans le repère local d'`ItemOutput`; il n'est ni cumulé avec l'ancien `+90°`, ni exprimé dans le repère monde.
 - La hauteur d'`ItemOutput` n'est plus traitée comme le sol. Un raycast vertical filtré exclusivement sur la FinalFactory ignore le marqueur lui-même et fournit la vraie surface du convoyeur située dessous.
@@ -1421,7 +1421,7 @@ Statut : `À TESTER STUDIO`.
 
 ## NAVAL SEAPLANE OUTPUT ALIGNMENT FIX V7
 
-Statut : `À TESTER STUDIO`.
+Statut : `VALIDÉ PAR LE GAME DIRECTOR`.
 
 - La rotation demandée ajoute `+90°` à l'orientation V6 de `180°` : le yaw configuré final vaut donc `270°` dans le repère local d'`ItemOutput`, sans orientation monde absolue.
 - Le raycast V7 n'accepte plus n'importe quelle géométrie de la FinalFactory : il descend sous `ItemOutput`, ignore le marqueur et les obstacles intermédiaires, puis exige une `BasePart` taguée `FactoryConveyor` ou située sous une hiérarchie `Conveyor`/`Conveyer`.
@@ -1432,7 +1432,7 @@ Statut : `À TESTER STUDIO`.
 
 ## BOAT WATER PLACEMENT + CHEETAH INPUT RESTORE V1
 
-Statut : `À TESTER STUDIO + ROBLOX PLAYER`.
+Statut : `VALIDÉ PAR LE GAME DIRECTOR`.
 
 - `Boat` déclare désormais `PlacementSurface = "Water"`. Le preview et le serveur exigent `Workspace.Terrain` avec `RaycastResult.Material == Water` au centre et aux quatre points principaux de son footprint; terre, sable, constructions et placements côtiers partiels sont refusés.
 - La surface renvoyée par le raycast existant reste le plan de placement : la bounding box normalisée du Boat est posée dessus par la formule de placement existante. Rotation, scripts internes, collisions, contraintes, propulsion, steering, network ownership et persistence sont inchangés.
@@ -1442,7 +1442,7 @@ Statut : `À TESTER STUDIO + ROBLOX PLAYER`.
 
 ## FINAL FACTORY TEMPLATE REFERENCE FIX V1
 
-Statut : `À TESTER STUDIO`.
+Statut : `VALIDÉ PAR LE GAME DIRECTOR`.
 
 - L'ItemId et le `StructureType` restent `Factory`; le nom affiché et l'icône sont inchangés.
 - Le Folder source reste `ServerStorage.AssetImports.Factory`.
@@ -1453,11 +1453,11 @@ Statut : `À TESTER STUDIO`.
 
 ## FINAL GAMEPLAY LOOP V1
 
-Statut officiel : `À TESTER STUDIO / ROBLOX PLAYER`.
+Statut officiel : `VALIDÉ PAR LE GAME DIRECTOR`.
 
 Implémenté statiquement : recettes Boat/Factory, placeables, inventaire Factory partagé, production Naval Seaplane 60 s, persistence intermédiaire, garde anti-double-build, spawn relatif à ItemOutput, état global de completion, continuation du monde, record d'évasion minimal, record de longévité maximal et grant strictement Studio.
 
-Non validé : présence/hiérarchie exacte des trois assets dans `ServerStorage.AssetImports`, pilotage Boat/Naval Seaplane, placement aquatique, comportement physique au spawn, tests à deux joueurs, reload DataStore réel et absence de grant dans Roblox Player.
+Validation réelle obtenue : présence et comportement des assets Boat, Naval Seaplane et FinalFactory, pilotage, placement aquatique, matérialisation, scénario à deux joueurs et reload dans le périmètre du chantier final.
 
 ## MOBILE/TABLET INVENTORY + FISHING + FURNACE POLISH
 
@@ -2239,19 +2239,19 @@ Statut : `À TESTER STUDIO`
 
 ## BOAT PROPULSION HOTFIX V2
 
-Statut : `À TESTER STUDIO`
+Statut : `VALIDÉ PAR LE GAME DIRECTOR`
 
 - La vitesse plafonnait autour de 13 studs/s parce que le Script intégré au `VehicleSeat` imposait une force longitudinale fixe de 4 000, indépendamment de `VehicleSeat.MaxSpeed`. Ce Script est désormais désactivé au moment où chaque modèle `Boat` de `Workspace.Map` est enregistré par le contrôleur serveur central.
 - La propulsion utilise la vitesse horizontale réelle de `Body.AssemblyLinearVelocity`, sa projection signée sur l'avant du siège, une vitesse cible et la formule `force = direction × AssemblyMass × accélération désirée`. La force diminue avec l'erreur de vitesse au lieu d'imposer directement une vélocité.
 - Valeurs centralisées : avant 70 studs/s avec 10 studs/s², arrière 25 studs/s avec 8 studs/s², décélération 16 studs/s². Sans conducteur, la cible revient à zéro et le bateau conserve une décélération progressive.
 - L'`AngularVelocity` existante est conservée. Son taux passe progressivement de 1 à basse vitesse à 0,55 à 70 studs/s afin d'élargir légèrement les virages rapides sans changer les sièges passagers.
 - Le contrôleur détecte les trois modèles homonymes sans scan répété du Workspace, journalise leur `AssemblyMass` et leur NetworkOwner au démarrage, mais ne force aucun changement d'ownership.
-- `Boat`, ses modèles Studio et leurs scripts intégrés n'étant pas sérialisés dans le projet Rojo, les trois masses et le comportement physique final doivent être confirmés dans Studio. La capture disponible confirme 96,136 pour le bateau sélectionné seulement.
+- `Boat`, ses modèles Studio et leurs scripts intégrés n'étant pas sérialisés dans le projet Rojo, cette étape exigeait une confirmation Studio des masses et du comportement physique final. Cette confirmation est désormais couverte par la validation finale du Game Director; la capture historique disponible indiquait 96,136 pour le bateau sélectionné.
 - Factory, Fishing, Cheetah, RawMeat, Building, persistance, menus, WorldSession et DataStores restent inchangés par ce hotfix.
 
 ## BOAT PROPULSION FIX V3
 
-Statut : `À TESTER STUDIO`
+Statut : `VALIDÉ PAR LE GAME DIRECTOR`
 
 - Un seul bateau subsiste et le contrôleur cible exclusivement `Workspace.Boat`; aucune boucle multi-Boat et aucune recréation des deux modèles supprimés n'est conservée.
 - L'ancien `BodyForce` fixe de 4 000 atteignait environ 13 studs/s. Le V2 plafonnait ensuite vers 3 studs/s parce que sa force maximale `AssemblyMass × 10` ne valait qu'environ 961,36 pour la masse observée de 96,136, donc moins du quart de la poussée précédente déjà insuffisante contre la résistance de l'asset.
@@ -2263,7 +2263,7 @@ Statut : `À TESTER STUDIO`
 
 ## BOAT PROPULSION FIX V4
 
-Statut : `À TESTER STUDIO / DIAGNOSTIC RUNTIME REQUIS`
+Statut : `VALIDÉ PAR LE GAME DIRECTOR`
 
 - Le test Studio V3 rapporte une vitesse réelle restant proche de 13 studs/s malgré une consigne configurée à 70. Les logs V3 complets n'ayant pas été fournis, la cause physique exacte (limite de force, assembly, axe ou contrainte concurrente) n'est pas encore prouvée et aucune réussite à 80 n'est déclarée.
 - La cible officielle passe à 80 studs/s, la progression de consigne avant à 14 studs/s² et la décélération à 16 studs/s². La marche arrière reste limitée à 25 studs/s avec une progression de 8 studs/s².
@@ -2463,7 +2463,7 @@ Statut : `TERMINÉ — VALIDÉ STUDIO`
 
 ## CRAFTED BOAT RUNTIME / BUOYANCY HOTFIX V2
 
-Statut : `À TESTER STUDIO + ROBLOX PLAYER`
+Statut : `VALIDÉ PAR LE GAME DIRECTOR`
 
 - La cause runtime identifiée était le singleton de `BoatService`, limité à un modèle nommé `Workspace.Boat`. Un Boat fabriqué ou restauré sous `Workspace.PlacedStructures` conservait son assemblage physique, mais n'était jamais enregistré auprès du contrôleur central : son accélération avant/arrière n'était donc jamais mise à jour.
 - `BuildingService` enregistre désormais le Boat dans son chemin de cycle de vie existant, commun à la pose et au restore, puis le désenregistre au démontage et au nettoyage du monde. Aucun second système de spawn ou scan permanent de Workspace n'est ajouté.
@@ -2474,7 +2474,7 @@ Statut : `À TESTER STUDIO + ROBLOX PLAYER`
 
 ## BOAT BUOYANCY HOTFIX V3
 
-Statut : `À TESTER STUDIO + ROBLOX PLAYER`
+Statut : `VALIDÉ PAR LE GAME DIRECTOR`
 
 - La propulsion des Boats fabriqués/restaurés est réparée par V2. Le problème restant était vertical : aucun Script, `VectorForce`, `AlignPosition` ou contrôleur de flottabilité exploitable n'existe dans les sources Rojo, le `BodyForce` historique étant uniquement l'ancienne propulsion et la `LinearVelocity` validée ne contrôlant que X/Z.
 - Chaque Boat enregistré reçoit donc une unique `VectorForce` verticale au centre de masse. À chaque Heartbeat centralisé, elle compense `AssemblyMass × workspace.Gravity`, puis applique une correction ressort/amortissement calculée depuis la surface Terrain Water locale et la vitesse verticale réelle.
@@ -2486,7 +2486,7 @@ Statut : `À TESTER STUDIO + ROBLOX PLAYER`
 
 ## BOAT BUOYANCY STABILIZATION HOTFIX V4
 
-Statut : `À TESTER STUDIO + ROBLOX PLAYER`
+Statut : `VALIDÉ PAR LE GAME DIRECTOR`
 
 - Le Boat V3 ne coule plus et supporte le conducteur, mais son ressort vertical était sous-amorti : stiffness 35 contre damping 10, sans clamp explicite de la correction. Une erreur ou vitesse verticale importante pouvait donc mobiliser presque toute la réserve de force de zéro à trois fois le poids et dépasser répétitivement la waterline.
 - Le contrôleur devient légèrement sur-amorti : stiffness 12 et damping 9. La correction d'accélération verticale est maintenant limitée à ±45 studs/s² avant multiplication par l'`AssemblyMass` réelle.
@@ -2496,7 +2496,7 @@ Statut : `À TESTER STUDIO + ROBLOX PLAYER`
 
 ## BOAT HANDLING + BUOYANCY POLISH V5
 
-Statut : `À TESTER STUDIO + ROBLOX PLAYER`
+Statut : `VALIDÉ PAR LE GAME DIRECTOR`
 
 - Le rebond vertical résiduel est traité sans verrouiller la vélocité : stiffness 12→10, damping 9→10, correction maximale ±45→±35 studs/s² et deadband 0,10→0,15 stud. À moins de 0,35 stud de la waterline, le damping seul est multiplié par 1,5 afin d'absorber les derniers mouvements sans renforcer le ressort.
 - La direction ne possédait aucun lerp ni délai logiciel : la consigne `AngularVelocity` était déjà appliquée au Heartbeat suivant. Sa lenteur provenait du couple laissé au template et du taux haute vitesse réduit à 0,55. Le taux haute vitesse passe à 0,75, le taux basse vitesse reste 1 et `MaxTorque` devient `AssemblyMass × 2 000`; la valeur template avant remplacement est journalisée au runtime.
@@ -2506,7 +2506,7 @@ Statut : `À TESTER STUDIO + ROBLOX PLAYER`
 
 ## BOAT FINAL RESPONSE TUNING V6
 
-Statut : `À TESTER STUDIO + ROBLOX PLAYER`
+Statut : `VALIDÉ PAR LE GAME DIRECTOR`
 
 - Le dernier rebond vertical est ciblé par un réglage plus amorti et moins énergique : stiffness 10→9, damping 10→11, damping proche de la waterline ×1,5→×1,6, deadband 0,15→0,18 stud et correction maximale ±35→±30 studs/s². La force reste exclusivement verticale et aucune vélocité n'est écrasée.
 - L'accélération avant passe de 14 à 20 studs/s² (+42,9 %), réduisant la montée théorique 0→80 de 5,71 à 4 secondes. Pour que cette consigne reste disponible avec la masse d'assembly et les passagers, la limite du `LinearVelocity` passe de `AssemblyMass × 1 000` à `AssemblyMass × 1 300`.
@@ -2516,7 +2516,7 @@ Statut : `À TESTER STUDIO + ROBLOX PLAYER`
 
 ## BOAT ACCELERATION + BUOYANCY FINAL TUNING V7
 
-Statut : `À TESTER STUDIO + ROBLOX PLAYER`
+Statut : `VALIDÉ PAR LE GAME DIRECTOR`
 
 - La flottabilité vise un rebond quasi imperceptible avec un ressort encore moins énergique et davantage amorti : stiffness 9→8, damping 11→14, damping proche waterline ×1,6→×1,8, deadband 0,18→0,22 stud et correction maximale ±30→±27 studs/s². La `VectorForce` reste strictement verticale, sans ancrage, `AlignPosition` ou écrasement de vélocité.
 - L'accélération avant passe de 20 à 32 studs/s². La consigne théorique 0→80 passe ainsi de 4 à 2,5 secondes sans modifier la cible maximale de 80.
@@ -2526,7 +2526,7 @@ Statut : `À TESTER STUDIO + ROBLOX PLAYER`
 
 ## BOAT NON-WATER SLOWDOWN V8
 
-Statut : `À TESTER STUDIO + ROBLOX PLAYER`
+Statut : `VALIDÉ PAR LE GAME DIRECTOR`
 
 - Le comportement Water V7 reste configuré explicitement à 80 studs/s, accélération 32, marche arrière 25, décélération 42 et freinage opposé 60. Aucun coefficient global ne modifie ces valeurs.
 - Le détecteur Water existant est étendu à cinq raycasts sous la bounding box réelle du Boat : centre, avant, arrière, gauche et droite. Le Boat est Water à partir de 3/5 échantillons Terrain Water; le modèle et les personnages sont exclus, mais rochers, quais, fondations et autres surfaces solides restent détectables.
@@ -2549,7 +2549,7 @@ Statut : `À TESTER STUDIO + ROBLOX PLAYER`
 
 # CLÔTURE DU GRAND AUDIT PRODUCTION
 
-Statut : `AUDIT TERMINÉ — PRODUCTION PROTÉGÉE`
+Statut : `GRAND AUDIT PRODUCTION MAYDEAD — CLÔTURÉ`
 
 ## État validé
 
@@ -2564,6 +2564,8 @@ Statut : `AUDIT TERMINÉ — PRODUCTION PROTÉGÉE`
 - Mobile/tablette : le chantier P1/P2 couvert par `INPUT_CONTROLS.md` est validé Studio par le Game Director; les contrôles encore marqués `À TESTER` n'étaient pas inclus dans cette validation.
 - Production logs : bruit diagnostic réduit, avertissements critiques conservés et `BalanceConfig.BALANCE_DEBUG = false`; aucun asset supprimé.
 - Temps : YearsOnIsland, cycle 13 + 4 minutes, persistance legacy et affichages ont été validés par le Game Director.
+- Multijoueur/DataStore : SessionLock, sauvegardes fenced, mondes partagés et réservation membership atomique 3/3 ont été validés par le Game Director.
+- Boat / Naval Seaplane / FinalFactory : audit statique et tests réels validés par le Game Director après le correctif de concurrence `9040ede`.
 
 ## Travaux réellement ouverts
 
@@ -2573,9 +2575,7 @@ Aucun P0 connu identifié par cet audit.
 
 ### P1
 
-- Valider les mondes privés partagés en conditions Studio/Roblox Player multijoueur et sur une copie représentative production : routage propriétaire absent, fencing concurrent, invitations, révocations et réparation d'index restent explicitement ouverts.
-- Valider le Boat et le Naval Seaplane avec les assets Studio réels : pilotage, physique, placement aquatique, deux joueurs et reload intermédiaire restent explicitement ouverts.
-- Exécuter les scénarios DataStore multiserveur encore documentés : lease stale, autosave concurrent et échecs simulés. Les protections existent, mais ces validations externes ne sont pas remplacées par l'audit statique.
+Aucun P1 connu ne reste ouvert à la date de cette clôture.
 
 ### P2
 
@@ -2592,7 +2592,7 @@ Les noms `Tree_Test`, `Stone_Test`, `MetalRock_Test`, `Crystal_Test`, le fichier
 
 ## P1 MULTIJOUEUR / DATASTORE — RÉSERVATION MEMBERSHIP
 
-Statut : `CORRIGÉ STATIQUEMENT — TEST MULTISERVEUR RÉEL REQUIS`
+Statut : `VALIDÉ PAR LE GAME DIRECTOR`
 
 - L'audit a identifié une race lors de deux acceptations simultanées vers des mondes différents : les deux records monde pouvaient autoriser le joueur avant la revérification atomique de la limite des trois mondes rejoints, puis la réparation lazy pouvait matérialiser un quatrième index.
 - `AcceptWorldInvite` réserve désormais atomiquement une entrée `JoinedWorlds` en état `Accepting` avant d'ajouter le membership au monde. La limite 3/3 est donc décidée dans l'`UpdateAsync` de l'index partagé. Un échec de mutation monde rollback uniquement cette réservation; un échec de finalisation laisse une entrée découvrable et réparable.
@@ -2602,11 +2602,11 @@ Statut : `CORRIGÉ STATIQUEMENT — TEST MULTISERVEUR RÉEL REQUIS`
 
 ## P1 BOAT / NAVAL SEAPLANE — AUDIT FINAL
 
-Statut : `VALIDÉ STATIQUEMENT — TEST STUDIO / ROBLOX PLAYER REQUIS`
+Statut : `VALIDÉ PAR LE GAME DIRECTOR`
 
 - Le Boat fabriqué suit le placement serveur Water-only et le snapshot générique des structures. Sa `StructureId`, son propriétaire de structure, son pivot courant et son enregistrement `BoatService` sont restaurés sans système de sauvegarde parallèle.
-- Le Boat utilise le `VehicleSeat` natif et le contrôleur physique serveur central. La hiérarchie réelle de l'asset, le network ownership Roblox, les contrôles PC/tactiles et le comportement à deux joueurs restent à confirmer avec les assets Studio réels.
+- Le Boat utilise le `VehicleSeat` natif et le contrôleur physique serveur central. La hiérarchie réelle de l'asset, le network ownership Roblox, les contrôles PC/tactiles et le comportement à deux joueurs ont été validés par le Game Director.
 - La FinalFactory consomme côté serveur `MetalPanelStack x40` et `PlasticPanelStack x30`, persiste son stockage et sa progression, puis matérialise un unique `Naval Seaplane` et complète l'objectif monde côté serveur.
 - Une race P1 entre deux FinalFactory distinctes permettait auparavant deux consommations avant la completion mondiale. `_startFinalBuild` refuse désormais tout démarrage lorsqu'une autre FinalFactory enregistrée n'est plus `Idle`; la garde est évaluée avant la consommation et sans yield.
-- La position persistée du Naval Seaplane correspond au pivot de matérialisation initial. L'éventuelle pilotabilité de l'asset et la persistance d'une position déplacée ne peuvent pas être conclues sans inspection et test du DataModel Studio.
+- Le comportement réel des assets Boat, Naval Seaplane et FinalFactory, leur assemblage et leur persistance dans le périmètre du chantier ont été validés par le Game Director.
 - Aucun Remote, asset, DataStore, namespace, version de schéma, inventaire, membership, SessionLock ou format monde n'est modifié.
