@@ -14,6 +14,7 @@ local CAPSULE_SPACING = 8
 local ICON_SIZE = 48
 local NORMAL_TEXT = Color3.fromRGB(185, 195, 205)
 local HUD_TOP_OFFSET = 78
+local CRITICAL_HEALTH_RATIO = 0.2
 
 local STAT_COLORS = {
 	Health = Color3.fromRGB(245, 65, 75),
@@ -101,7 +102,7 @@ local function createVignette(parent)
 		edge.Size = definition[2]
 		edge.Position = definition[3]
 		edge.BackgroundColor3 = Color3.new(1, 1, 1)
-		edge.BackgroundTransparency = 0.9
+		edge.BackgroundTransparency = 1
 		edge.BorderSizePixel = 0
 		edge.ZIndex = 2
 		edge.Parent = root
@@ -128,7 +129,14 @@ end
 function controller:_resetAlerts()
 	if self.ToastRevision then self.ToastRevision += 1 end
 	if self.Toast then self.Toast.Visible = false end
-	if self.Vignette then self.Vignette.Visible = false end
+	if self.Vignette then
+		self.VignetteRevision = (self.VignetteRevision or 0) + 1
+		self.VignetteActive = false
+		for _, tween in ipairs(self.VignetteTweens or {}) do tween:Cancel() end
+		table.clear(self.VignetteTweens or {})
+		for _, edge in ipairs(self.VignetteEdges or {}) do edge.BackgroundTransparency = 1 end
+		self.Vignette.Visible = false
+	end
 	for _, capsule in pairs(self.Capsules or {}) do
 		if capsule.PulseTween then capsule.PulseTween:Cancel(); capsule.PulseTween = nil end
 		capsule.IconScale.Scale = 1
@@ -197,21 +205,38 @@ function controller:_setCapsuleState(id, value)
 end
 
 function controller:_updateVignette(state)
-	local selectedId
-	for _, id in ipairs(AlertConfig.PRIORITY) do
-		if (state[id] or 0) <= AlertConfig.CRITICAL_THRESHOLD then selectedId = id; break end
-	end
-	if not selectedId or not self.ScreenGui.Enabled then
-		self.Vignette.Visible = false
-		self.Vignette:SetAttribute("ActiveAlert", "None")
-		return
-	end
-	local color = AlertConfig.COLORS[selectedId]
-	self.Vignette.Visible = true
-	self.Vignette:SetAttribute("ActiveAlert", selectedId)
+	local character = player.Character
+	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+	local maxHealth = humanoid and humanoid.MaxHealth or 0
+	local health = humanoid and math.min(state.Health or humanoid.Health, humanoid.Health) or 0
+	local healthPercent = maxHealth > 0 and math.clamp(health / maxHealth, 0, 1) or 1
+	local active = self.ScreenGui.Enabled and healthPercent <= CRITICAL_HEALTH_RATIO
+	if self.VignetteActive == active then return end
+
+	self.VignetteActive = active
+	self.VignetteRevision += 1
+	local revision = self.VignetteRevision
+	for _, tween in ipairs(self.VignetteTweens) do tween:Cancel() end
+	table.clear(self.VignetteTweens)
+	self.Vignette:SetAttribute("ActiveAlert", active and "Health" or "None")
+	if active then self.Vignette.Visible = true end
 	for _, edge in ipairs(self.VignetteEdges) do
-		edge.BackgroundColor3 = color
-		edge.BackgroundTransparency = selectedId == "Health" and 0.84 or 0.9
+		edge.BackgroundColor3 = AlertConfig.COLORS.Health
+		local tween = TweenService:Create(
+			edge,
+			TweenInfo.new(active and 0.22 or 0.2, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+			{BackgroundTransparency = active and 0.84 or 1}
+		)
+		table.insert(self.VignetteTweens, tween)
+		tween:Play()
+	end
+	if not active then
+		local finalTween = self.VignetteTweens[1]
+		finalTween.Completed:Once(function()
+			if self.VignetteRevision == revision and not self.VignetteActive then
+				self.Vignette.Visible = false
+			end
+		end)
 	end
 end
 
@@ -341,6 +366,9 @@ function controller:_build()
 	self.ToastRevision = 0
 	self.BreathRevision = 0
 	self.Vignette, self.VignetteEdges = createVignette(screenGui)
+	self.VignetteTweens = {}
+	self.VignetteRevision = 0
+	self.VignetteActive = false
 
 	local toast = Instance.new("TextLabel")
 	toast.Name = "SurvivalAlertToast"
