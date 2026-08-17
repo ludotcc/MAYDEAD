@@ -875,7 +875,7 @@ Les animaux peuvent fournir notamment :
 - Humanoid 100 PV ; Axe 25 dégâts ; Pickaxe 20 dégâts ; portée et cooldown validés serveur.
 - Coup final : RawMeat x6, uniquement si la capacité inventaire permet de sécuriser toute la récompense.
 - Verrou de mort, corps supprimé après 4 secondes et respawn après 300 secondes.
-- AI conservée sans réécriture ; scripts nommés Animate désactivés sur les clones pour neutraliser les AssetIds incompatibles, à valider dans Studio.
+- L'IA legacy embarquée choisissait des destinations aléatoires et des chemins `PathfindingService` sans aucune validation de l'eau. Elle est désactivée au clonage et sa locomotion équivalente est désormais pilotée par `BisonAI` côté serveur : destinations et waypoints sur Terrain sec, coût Water prohibitif, échantillonnage léger des segments et retour vers une `LastSafeGroundPosition` propre à chaque Bison. Les scripts nommés Animate restent désactivés sur les clones pour neutraliser les AssetIds incompatibles, à valider dans Studio.
 
 ------------------------------------------------------------------------
 

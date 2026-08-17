@@ -15,6 +15,7 @@ local DamageFeedbackService = require(script.Parent:WaitForChild("DamageFeedback
 local CheetahAI = require(script.Parent:WaitForChild("CheetahAI"))
 local JellyfishAI = require(script.Parent:WaitForChild("JellyfishAI"))
 local SharkAI = require(script.Parent:WaitForChild("SharkAI"))
+local BisonAI = require(script.Parent:WaitForChild("BisonAI"))
 
 local WildlifeService = {}
 WildlifeService.__index = WildlifeService
@@ -118,6 +119,7 @@ function WildlifeService.new()
 	self._cheetahRandom = Random.new()
 	self._jellyfishAIs = setmetatable({}, {__mode = "k"})
 	self._sharkAIs = setmetatable({}, {__mode = "k"})
+	self._bisonAIs = setmetatable({}, {__mode = "k"})
 	self._tamingFeedback = Instance.new("RemoteEvent")
 	self._tamingFeedback.Name = "CheetahTamingFeedback"
 	self._tamingFeedback.Parent = ReplicatedStorage
@@ -318,9 +320,39 @@ function WildlifeService:_spawnAt(spawnPoint, animalType, persistentState)
 			table.concat(animations, ", "), table.concat(joints, ", ")))
 	end
 	animal:PivotTo(getSpawnPivot(spawnPoint, animal))
+	if animalType == "Bison" then
+		local root = animal:FindFirstChild("Torso")
+		local drySpawn = root and root:IsA("BasePart") and BisonAI.IsDryTerrainAt(
+			root.Position,
+			{animal, spawnPoint},
+			function(position) return SurvivalService:IsPointInTerrainWater(position) end
+		)
+		if not drySpawn then
+			animal:Destroy()
+			warn("[MAYDEAD][BISON] Spawn rejected without dry Terrain ground: " .. spawnPoint:GetFullName())
+			return
+		end
+		local legacyAI = animal:FindFirstChild("AI")
+		if legacyAI and legacyAI:IsA("BaseScript") then legacyAI.Disabled = true end
+	end
 	animal.Parent = animalFolder
 	self._activeBySpawn[spawnPoint] = animal
 	self._spawnByAnimal[animal] = spawnPoint
+	if animalType == "Bison" then
+		local root = animal:FindFirstChild("Torso")
+		if root and root:IsA("BasePart") then pcall(function() root:SetNetworkOwner(nil) end) end
+		local bisonAI = BisonAI.new(animal, function(position)
+			return SurvivalService:IsPointInTerrainWater(position)
+		end)
+		if not bisonAI then
+			self._activeBySpawn[spawnPoint] = nil
+			self._spawnByAnimal[animal] = nil
+			animal:Destroy()
+			warn("[MAYDEAD][BISON] Runtime AI rejected model without Humanoid/Torso")
+			return
+		end
+		self._bisonAIs[animal] = bisonAI
+	end
 	if animalType == "Cheetah" then
 		self._cheetahCount += 1
 		local root = animal:FindFirstChild("HumanoidRootPart") or animal:FindFirstChild("Torso") or animal.PrimaryPart
@@ -638,6 +670,7 @@ function WildlifeService:_kill(player, animal, animalType, definition)
 	self._spawnByAnimal[animal] = nil
 	if spawnPoint then self._activeBySpawn[spawnPoint] = nil end
 	local ai = self._cheetahAIs[animal]
+	local bisonAI = self._bisonAIs[animal]
 	local wasTamed = ai and ai.Tamed
 	local dropAmount = wasTamed and 0 or (definition.Drop.Amount
 		or math.random(definition.Drop.MinAmount, definition.Drop.MaxAmount))
@@ -665,6 +698,7 @@ function WildlifeService:_kill(player, animal, animalType, definition)
 		if not wasTamed then self._wildCheetahCount = math.max(0, self._wildCheetahCount - 1) end
 		if self._persistentCheetahAI == ai then self._persistentCheetahAI = nil end
 	end
+	if bisonAI then bisonAI:Stop(); self._bisonAIs[animal] = nil end
 	print("[MAYDEAD] " .. animalType .. " killed by " .. player.Name)
 	print("[MAYDEAD] RawMeat awarded = " .. dropAmount)
 	if spawnPoint then self:_scheduleRespawn(spawnPoint, animalType, definition) end
@@ -792,6 +826,9 @@ function WildlifeService:Start()
 		end
 		for model, ai in self._sharkAIs do
 			if not ai:Step(deltaTime) then self._sharkAIs[model] = nil end
+		end
+		for model, ai in self._bisonAIs do
+			if not ai:Step(deltaTime) then self._bisonAIs[model] = nil end
 		end
 	end)
 

@@ -984,7 +984,10 @@ Les espèces exactes seront définies progressivement.
 Première espèce validée pour la V1 : le **Bison**. Il possède 100 PV,
 subit 25 dégâts par coup de hache ou 20 par coup de pioche, et attribue
 RawMeat x6 au joueur portant le coup final. Son respawn de test est de
-300 secondes sur son point d'apparition d'origine.
+300 secondes sur son point d'apparition d'origine. Le Bison est strictement
+terrestre : il ne choisit aucune destination aquatique, abandonne toute
+trajectoire menant dans `Terrain Water` et revient vers sa dernière position
+de sol sûre s'il tombe accidentellement dans l'eau.
 
 Le **Cheetah / Guépard sauvage V1** est une rencontre rare limitée à un
 individu actif. Il reste passif tant qu'il n'est pas agressé, refuse l'eau
