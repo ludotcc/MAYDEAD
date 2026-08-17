@@ -1745,6 +1745,8 @@ Statut : `VALIDÉ PAR LE GAME DIRECTOR`.
 
 - Le `Boat` est fabriqué à la Table de craft avec `Wood x30`, `MetalIngot x12` et `CopperIngot x6`, puis placé comme véhicule sans altération de ses scripts, contraintes ou réglages physiques.
 - Le `Boat` est exclusivement placeable sur la surface de l'eau Terrain; ses principaux points de support doivent tous rester au-dessus de l'eau.
+- Le `Boat` est un véhicule mobile persistant : chaque sauvegarde conserve sa position et son orientation réelles courantes. Son Cargo partagé, lié à sa `StructureId`, contient exactement 40 slots persistants et permet le transport inter-îles; un ancien Boat sans état Cargo reçoit 40 slots vides.
+- Un démontage gameplay valide du `Boat` détruit définitivement tout son Cargo, même non vide, sans remboursement ni dépôt au sol. L'item `Boat` lui-même continue d'être restitué selon la règle de démontage existante.
 - En monture Cheetah sur PC, le clic gauche commande le saut. `E` conserve le démontage explicite; Espace n'est pas une commande de saut du Cheetah.
 - La `Factory` finale est fabriquée à la Table de craft avec `MetalPanelStack x12`, `MetalIngot x20` et `CopperIngot x10`.
 - La Factory est une station partagée du monde. Son inventaire accepte uniquement `MetalPanelStack` et `PlasticPanelStack` avec les transferts officiels joueur/station.

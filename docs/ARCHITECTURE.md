@@ -1830,4 +1830,10 @@ Le modèle final est cloné depuis `ServerStorage.AssetImports["Naval Seaplane"]
 
 **MAYDEAD --- Architecture Technique V1**
 
+## BOAT V2 — PERSISTANCE MOBILE ET CARGO
+
+`BoatService` expose au snapshot le pivot réel courant reconstruit depuis le `Body` physique et son offset de modèle. `BuildingService` sérialise ainsi position et orientation au moment de chaque capture; les vélocités, commandes, occupant et network ownership restent exclusivement runtime et sont réinitialisés au chargement.
+
+Le Cargo du Boat réutilise `StationService` comme stockage serveur autoritaire partagé de 40 slots. Son état est imbriqué dans l'enregistrement de structure identifié par `StructureId`; aucun DataStore, Remote ou stockage parallèle n'est ajouté. Un état absent sur un ancien Boat initialise simplement 40 slots vides. Le démontage gameplay verrouille d'abord la structure, efface le Cargo puis applique la restitution existante du Boat; le nettoyage technique d'un monde ne déclenche pas cette perte.
+
 Ce document constitue la référence technique générale du projet MAYDEAD.

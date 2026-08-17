@@ -2640,6 +2640,16 @@ Statut : `IMPLÉMENTÉ — À TESTER STUDIO`
 - L'énergie reste inchangée : 0,005/s immobile, 0,065/s en mouvement, coût de récolte manuelle 0,75 et règles de fatigue/récupération existantes.
 - Aucun multiplicateur nocturne n'est ajouté. Aucun Remote, DataStore, `SchemaVersion`, format persistant, reset ou migration de jauge n'est introduit.
 
+## BOAT V2 — POSITION FINALE ET CARGO
+
+Statut : `À TESTER`
+
+- Le snapshot du Boat lit désormais le `Body` physique réellement déplacé et reconstruit le pivot complet du modèle; chaque autosave et sauvegarde finale capture donc la position et l'orientation courantes, sans persister vélocité, commandes, occupant ou network ownership.
+- Le Boat est enregistré dans `StationService` avec un Cargo serveur autoritaire partagé de 40 slots. Il réutilise les ItemStacks, MaxStack, transferts, UI responsive, viewers et contrôles de proximité mobiles existants, sans Remote ni stockage parallèle.
+- Le Cargo est sauvegardé dans l'état de la structure portant la même `StructureId`. Les anciens Boats dont le snapshot ne contient aucun état Cargo démarrent avec 40 slots vides, sans migration globale, reset ou changement de `SchemaVersion`/`StructuresVersion`.
+- Le démontage gameplay reste permis avec un Cargo non vide : la structure est verrouillée pour qu'un seul dernier coup gagne, tout le Cargo est effacé définitivement, puis l'item `Boat` est restitué selon la règle existante. Une panne inattendue de restitution rollback le Cargo et la structure; logout, autosave et cleanup technique ne déclenchent jamais cette perte.
+- Les validations Studio/Roblox Player position A→B→C, orientation, Cargo/reload, inter-îles, 40 slots, portée mobile, concurrence multijoueur et démontage avec Cargo restent à exécuter.
+
 ## JELLYFISH — MENACE AQUATIQUE V1
 
 Statut : `À TESTER`

@@ -130,6 +130,8 @@ décrit le contrat, sans devenir une seconde configuration.
 | Factory : assembler | Bouton UI | Bouton `Activated` | Bouton `Activated` | `FactoryStatusController`, `StationController` | VALIDÉ |
 | Factory : fermer | `B`, Échap ou bouton | Bouton | Bouton | `FactoryStatusController` | VALIDÉ |
 | Bateau : accélérer / tourner | Contrôles `VehicleSeat` | Contrôles de siège natifs | Idem | `BoatService` | VALIDÉ |
+| Bateau : ouvrir le Cargo | `E` via `ProximityPrompt` | Prompt tactile | Prompt tactile | `StationController`, `StationService` | À TESTER EN STUDIO |
+| Bateau : transférer / parcourir les 40 slots | Clic, drag, clic long et scroll | Touch, drag, appui long et scroll | Idem | `StationController`, `StationService` | À TESTER EN STUDIO |
 | Agriculture : planter / récolter | `ProximityPrompt` | Prompt tactile | Prompt tactile | `CropService` | NATIF ROBLOX |
 | Menus monde | Boutons et TextBox | Boutons et clavier virtuel | Idem | `MainMenuController` | À TESTER EN STUDIO |
 
@@ -167,6 +169,11 @@ Le code MAYDEAD lit `VehicleSeat.ThrottleFloat` et `SteerFloat`. Aucun
 contrôleur bateau mobile spécifique n'est présent. Le comportement PC,
 téléphone et tablette repose sur les contrôles de siège Roblox et a été validé
 par le Game Director dans le chantier final Boat / Naval Seaplane.
+
+Le Cargo réutilise l'interaction et les transferts des stations existantes : le
+prompt ouvre le stockage uniquement à proximité de la position actuelle du Boat,
+et le serveur refuse toute mutation devenue hors portée. Aucun nouvel input ni
+Remote spécifique n'est introduit.
 
 ------------------------------------------------------------------------
 

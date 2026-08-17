@@ -1751,6 +1751,7 @@ Statut : `VALIDÉ PAR LE GAME DIRECTOR`.
 
 ### P2 / POST-PUBLICATION OUVERT
 
+- [ ] Boat V2 : valider en Studio/Roblox Player la restauration de la dernière position/orientation, le Cargo partagé persistant de 40 slots, la portée mobile et la perte intégrale du Cargo au démontage.
 - validations visuelles et responsive encore explicitement marquées `À TESTER`.
 
 ### FUTUR
