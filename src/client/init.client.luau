@@ -269,6 +269,14 @@ local function startHUD()
 		warn("[MAYDEAD] TouchJumpIntegrationController not found")
 	end
 
+	local damageFeedbackController = resolveController("DamageFeedbackController")
+	if damageFeedbackController then
+		local ok, err = xpcall(function() damageFeedbackController:Start() end, debug.traceback)
+		if not ok then warn("[MAYDEAD] DamageFeedbackController ERROR: " .. tostring(err)) end
+	else
+		warn("[MAYDEAD] DamageFeedbackController not found")
+	end
+
 	local drinkController =
 		resolveController(
 			"DrinkController"

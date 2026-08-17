@@ -2650,3 +2650,13 @@ Statut : `À TESTER`
 - À 5 studs, la menace applique 5 PV via `SurvivalService`, au maximum une fois toutes les 1,5 seconde par joueur. Terre, plage, pont et structure au-dessus de l'eau ne suffisent pas à rendre une cible valide.
 - La JellyFish est explicitement exclue des animaux chassables, marquée `Invulnerable`, protégée contre la mort de son `Humanoid`, sans loot, récompense, respawn aléatoire ni persistance dynamique.
 - Aucun DataStore, schéma, snapshot monde, inventaire, YearsOnIsland, SessionLock, contrôle joueur ou Remote n'est modifié. La matrice Studio solo/multijoueur, animation et rig reste à exécuter.
+
+## FEEDBACK VISUEL DES DÉGÂTS V1
+
+Statut : `À TESTER`
+
+- L'unique Remote serveur `DamageFeedback` transporte seulement un type `Taken`/`Dealt`, le montant réellement appliqué et, pour `Dealt`, la cible et sa dernière position connue. Il ne reçoit aucune requête client et ne participe à aucun calcul de dégâts.
+- `DamageFeedbackService` observe les pertes réelles de Health des personnages côté serveur. JellyFish, Cheetah, faim, soif, noyade et toute autre baisse serveur déclenchent ainsi la même vignette rouge légère.
+- Les hits Wildlife et Resource notifient `Dealt` uniquement après validation et mutation effective de la santé. Miss, cooldown, portée invalide, inventaire bloquant et JellyFish invulnérable ne produisent aucun nombre.
+- `DamageFeedbackController` affiche quatre bords rouges en fondu pendant 0,24 seconde et un nombre rouge-orangé montant pendant 0,65 seconde. Les nombres simultanés sont plafonnés à 12 et toutes les instances temporaires sont détruites.
+- Aucun dégât, cooldown, configuration JellyFish, contrôle, inventaire, DataStore, schéma ou format persistant n'est modifié.

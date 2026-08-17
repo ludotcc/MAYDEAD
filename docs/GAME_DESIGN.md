@@ -1054,6 +1054,12 @@ Le jeu ne doit pas devenir un RPG de combat.
 
 Le combat sert la survie et l'exploration.
 
+Toute perte réelle de vie produit un feedback visuel rouge court et discret.
+Lorsqu'un joueur inflige un dégât validé par le serveur à une cible vulnérable,
+un petit nombre de dégâts apparaît temporairement près de la cible. Un coup
+refusé, manqué ou porté sur une cible invulnérable ne produit aucun faux
+feedback de dégâts.
+
 ------------------------------------------------------------------------
 
 ## 39. RADEAU

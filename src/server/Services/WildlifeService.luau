@@ -10,6 +10,7 @@ local CheetahConfig = require(SharedFolder:WaitForChild("Config"):WaitForChild("
 local JellyfishConfig = require(SharedFolder:WaitForChild("Config"):WaitForChild("JellyfishConfig"))
 local InventoryService = require(script.Parent:WaitForChild("InventoryService"))
 local SurvivalService = require(script.Parent:WaitForChild("SurvivalService"))
+local DamageFeedbackService = require(script.Parent:WaitForChild("DamageFeedbackService"))
 local CheetahAI = require(script.Parent:WaitForChild("CheetahAI"))
 local JellyfishAI = require(script.Parent:WaitForChild("JellyfishAI"))
 
@@ -675,12 +676,14 @@ function WildlifeService:_handleHit(player, target)
 		print("[MAYDEAD] " .. animalType .. " kill rejected: inventory cannot secure RawMeat x" .. maximumDrop)
 		return
 	end
+	local previousHealth = humanoid.Health
 	humanoid:TakeDamage(toolDefinition.Damage)
 	local ai = self._cheetahAIs[animal]
 	if ai then ai:RegisterAggression(player, toolDefinition.Damage) end
 	print("[MAYDEAD] " .. animalType .. " hit by " .. tool.Name .. ", Health = " .. math.floor(humanoid.Health))
 	self._result:FireClient(player, toolDefinition.ImpactSoundName)
 	if humanoid.Health <= 0 then self:_kill(player, animal, animalType, definition) end
+	DamageFeedbackService:NotifyDealt(player, previousHealth - humanoid.Health, animal)
 end
 
 function WildlifeService:_logCheetahPopulation()

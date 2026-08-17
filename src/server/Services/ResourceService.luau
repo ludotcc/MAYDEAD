@@ -6,6 +6,7 @@ local HarvestConfig = require(SharedFolder:WaitForChild("Config"):WaitForChild("
 local BalanceConfig = require(SharedFolder:WaitForChild("Config"):WaitForChild("BalanceConfig"))
 local InventoryService = require(script.Parent:WaitForChild("InventoryService"))
 local SurvivalService = require(script.Parent:WaitForChild("SurvivalService"))
+local DamageFeedbackService = require(script.Parent:WaitForChild("DamageFeedbackService"))
 
 local ResourceService = {}
 ResourceService.__index = ResourceService
@@ -152,7 +153,9 @@ function ResourceService:_handleHarvest(player, target)
 		return
 	end
 
-	healthValue.Value = math.max(0, healthValue.Value - damage)
+	local previousHealth = healthValue.Value
+	healthValue.Value = math.max(0, previousHealth - damage)
+	local appliedDamage = previousHealth - healthValue.Value
 	if isHandHarvest then
 		SurvivalService:ConsumeEnergy(player, SurvivalService.HandHarvestEnergyCost)
 	end
@@ -173,6 +176,7 @@ function ResourceService:_handleHarvest(player, target)
 		end
 		self:_respawn(resource, healthValue, parent, definition)
 	end
+	DamageFeedbackService:NotifyDealt(player, appliedDamage, resource)
 end
 
 function ResourceService:Start()
