@@ -8,11 +8,13 @@ local SharedFolder = ReplicatedStorage:WaitForChild("Shared")
 local WildlifeDefinitions = require(SharedFolder:WaitForChild("Definitions"):WaitForChild("WildlifeDefinitions"))
 local CheetahConfig = require(SharedFolder:WaitForChild("Config"):WaitForChild("CheetahConfig"))
 local JellyfishConfig = require(SharedFolder:WaitForChild("Config"):WaitForChild("JellyfishConfig"))
+local SharkConfig = require(SharedFolder:WaitForChild("Config"):WaitForChild("SharkConfig"))
 local InventoryService = require(script.Parent:WaitForChild("InventoryService"))
 local SurvivalService = require(script.Parent:WaitForChild("SurvivalService"))
 local DamageFeedbackService = require(script.Parent:WaitForChild("DamageFeedbackService"))
 local CheetahAI = require(script.Parent:WaitForChild("CheetahAI"))
 local JellyfishAI = require(script.Parent:WaitForChild("JellyfishAI"))
+local SharkAI = require(script.Parent:WaitForChild("SharkAI"))
 
 local WildlifeService = {}
 WildlifeService.__index = WildlifeService
@@ -115,6 +117,7 @@ function WildlifeService.new()
 	self._lastCheetahSpawnPoint = nil
 	self._cheetahRandom = Random.new()
 	self._jellyfishAIs = setmetatable({}, {__mode = "k"})
+	self._sharkAIs = setmetatable({}, {__mode = "k"})
 	self._tamingFeedback = Instance.new("RemoteEvent")
 	self._tamingFeedback.Name = "CheetahTamingFeedback"
 	self._tamingFeedback.Parent = ReplicatedStorage
@@ -203,6 +206,22 @@ function WildlifeService:_registerJellyfish(model)
 	end
 	self._jellyfishAIs[model] = ai
 	print("[MAYDEAD][JELLYFISH] Registered aquatic hazard: " .. model:GetFullName())
+end
+
+function WildlifeService:_registerShark(model)
+	if not model:IsA("Model") or model.Name ~= SharkConfig.MODEL_NAME or self._sharkAIs[model] then return end
+	local ai = SharkAI.new(
+		model,
+		function(player) return SurvivalService:IsPlayerAquatic(player) end,
+		function(player, amount) return SurvivalService:DamagePlayer(player, amount) end,
+		function(position) return SurvivalService:IsPointInTerrainWater(position) end
+	)
+	if not ai then
+		warn("[MAYDEAD][SHARK] Rejected model without a valid PrimaryPart: " .. model:GetFullName())
+		return
+	end
+	self._sharkAIs[model] = ai
+	print("[MAYDEAD][SHARK] Registered aquatic predator: " .. model:GetFullName())
 end
 
 function WildlifeService:_syncCheetahRuntimeAttributes(ai, spawnPoint)
@@ -606,6 +625,15 @@ end
 function WildlifeService:_kill(player, animal, animalType, definition)
 	if animal:GetAttribute("IsDead") then return end
 	animal:SetAttribute("IsDead", true)
+	local sharkAI = self._sharkAIs[animal]
+	if sharkAI then
+		sharkAI:Kill()
+		print("[MAYDEAD] Shark killed by " .. player.Name .. " | loot = none")
+		task.delay(definition.RespawnTime, function()
+			if self._sharkAIs[animal] == sharkAI and animal.Parent then sharkAI:Respawn() end
+		end)
+		return
+	end
 	local spawnPoint = self._spawnByAnimal[animal]
 	self._spawnByAnimal[animal] = nil
 	if spawnPoint then self._activeBySpawn[spawnPoint] = nil end
@@ -651,7 +679,8 @@ function WildlifeService:_handleHit(player, target)
 	if not animal or not definition or animal:GetAttribute("IsDead") then return end
 	local spawnPoint = self._spawnByAnimal[animal]
 	local registeredCheetahAI = self._cheetahAIs[animal]
-	if not (registeredCheetahAI and registeredCheetahAI.Tamed)
+	local registeredSharkAI = self._sharkAIs[animal]
+	if not registeredSharkAI and not (registeredCheetahAI and registeredCheetahAI.Tamed)
 		and (not spawnPoint or self._activeBySpawn[spawnPoint] ~= animal)
 	then
 		return
@@ -670,9 +699,11 @@ function WildlifeService:_handleHit(player, target)
 	if now - (self._lastHits[player] or 0) < definition.AttackCooldown then return end
 	self._lastHits[player] = now
 	local fatal = humanoid.Health - toolDefinition.Damage <= 0
-	local maximumDrop = definition.Drop.Amount or definition.Drop.MaxAmount
+	local maximumDrop = definition.Drop and (definition.Drop.Amount or definition.Drop.MaxAmount) or 0
 	local cheetahAI = registeredCheetahAI
-	if fatal and not (cheetahAI and cheetahAI.Tamed) and not InventoryService:CanAddItem(player, definition.Drop.ItemId, maximumDrop) then
+	if fatal and maximumDrop > 0 and not (cheetahAI and cheetahAI.Tamed)
+		and not InventoryService:CanAddItem(player, definition.Drop.ItemId, maximumDrop)
+	then
 		print("[MAYDEAD] " .. animalType .. " kill rejected: inventory cannot secure RawMeat x" .. maximumDrop)
 		return
 	end
@@ -744,18 +775,23 @@ function WildlifeService:Start()
 	if animalsFolder then
 		for _, child in animalsFolder:GetChildren() do
 			self:_registerJellyfish(child)
+			self:_registerShark(child)
 		end
 		animalsFolder.ChildAdded:Connect(function(child)
 			self:_registerJellyfish(child)
+			self:_registerShark(child)
 		end)
 	else
-		warn("[MAYDEAD][JELLYFISH] Workspace.Animals folder not found")
+		warn("[MAYDEAD][WILDLIFE] Workspace.Animals folder not found; JellyFish and Shark registration skipped")
 	end
 	RunService.Heartbeat:Connect(function(deltaTime)
 		for model, ai in self._jellyfishAIs do
 			if not ai:Step(deltaTime) then
 				self._jellyfishAIs[model] = nil
 			end
+		end
+		for model, ai in self._sharkAIs do
+			if not ai:Step(deltaTime) then self._sharkAIs[model] = nil end
 		end
 	end)
 
@@ -817,6 +853,7 @@ function WildlifeService:Start()
 			if ai.FollowTargetUserId == player.UserId then ai:SetCommand("Stay") end
 		end
 		for _, ai in self._jellyfishAIs do ai:RemovePlayer(player) end
+		for _, ai in self._sharkAIs do ai:RemovePlayer(player) end
 		task.defer(function() self:_refreshCheetahSessionState() end)
 	end)
 	Players.PlayerAdded:Connect(function(player)

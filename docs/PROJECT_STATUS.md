@@ -2661,3 +2661,15 @@ Statut : `À TESTER`
 - `DamageFeedbackController` affiche quatre bords rouge sombre renforcés avec un fondu de 0,32 seconde, un flash rouge translucide de 0,08 seconde et une impulsion UI de 1 à 4 pixels selon le dégât. La caméra n'est jamais modifiée. Le nombre `Dealt` rouge-orangé reste inchangé à 0,65 seconde ; les nombres simultanés sont plafonnés à 12 et toutes les instances temporaires sont détruites.
 - Correction : le flash `Taken` reste strictement ponctuel. La vignette persistante distincte de `SurvivalHUDController` dépend uniquement du ratio réel `Humanoid.Health / Humanoid.MaxHealth <= 0,20`; Hunger, Thirst, Energy et Breath conservent leurs capsules/toasts sans teinte plein écran. Le passage 20% → 21% déclenche un fade out avant masquage.
 - Aucun dégât, cooldown, configuration JellyFish, contrôle, inventaire, DataStore, schéma ou format persistant n'est modifié.
+
+## SHARK — PRÉDATEUR AQUATIQUE V1
+
+Statut : `À TESTER`
+
+- L'asset réel exporté `Shark-audit.rbxm` a été audité : modèle rigide de 24 `MeshPart` et un `Part` Handle utilisé comme `PrimaryPart`, entièrement ancré, avec 24 `WeldConstraint`, 10 `Beam`, 8 `ParticleEmitter`, 4 `Attachment` et un `Decal`. Il ne contient ni Humanoid, Animator, AnimationController, Bone, Motor6D, Animation, KeyframeSequence ou Script.
+- `WildlifeService` enregistre de façon idempotente chaque modèle nommé `Shark` placé directement sous `Workspace.Animals`. Chaque instance garde son pivot Studio comme HomePosition et reçoit une santé serveur indépendante de 500 PV.
+- `SharkAI` utilise le `Heartbeat` Wildlife central et déplace l'assemblage ancré par pivot, avec orientation progressive. Il patrouille dans le Terrain Water à 7 studs/s dans un rayon de 45 studs, détecte toutes les 0,25 seconde les nageurs valides dans un rayon de 70 studs, les poursuit à 14 studs/s, puis revient à 9 studs/s dans un leash de 110 studs.
+- À 7 studs, le Shark inflige 30 PV via `SurvivalService`, au maximum une fois toutes les 1,8 seconde par joueur. Le feedback `Taken` existant est ainsi conservé. Plage, pont, Boat et structures hors état aquatique valide ne déclenchent pas l'agression.
+- Le Shark réutilise `WildlifeHitRequest`, la validation serveur et le feedback `Dealt`. StoneAxe inflige 25 PV, soit 20 coups théoriques; StonePickaxe inflige 20 PV, soit 25 coups théoriques.
+- Sa mort est gardée par l'attribut `IsDead`, stoppe l'IA et masque l'asset. Elle ne donne aucun RawFish, RawMeat, nourriture ou autre loot. Le même modèle réapparaît après 180 secondes à sa HomePosition avec 500 PV.
+- Aucun Remote, contrôle, DataStore, SchemaVersion, snapshot monde, SessionLock, YearsOnIsland, inventaire ou balance Survival n'est ajouté ou modifié. La matrice Studio patrol/terre/eau/combat/multijoueur/respawn reste à exécuter.

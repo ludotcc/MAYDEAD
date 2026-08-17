@@ -388,6 +388,20 @@ JellyFish reste exclue des définitions d'animaux chassables, porte les attribut
 runtime `JellyfishHazard` et `Invulnerable`, ne produit aucun loot et n'entre
 dans aucun snapshot de monde.
 
+Les modèles `Shark` placés directement sous `Workspace.Animals` sont eux aussi
+enregistrés par `WildlifeService`, sans template ni manager parallèle. Chaque
+instance conserve son pivot initial comme HomePosition et possède sa propre IA,
+sa propre santé serveur, sa cible, sa patrouille et ses cooldowns. `SharkAI`
+pilote patrol, chase, attaque, leash, retour et respawn depuis le même
+`Heartbeat` central. Le déplacement rigide par `Model:PivotTo()` correspond à
+l'asset ancré exporté, qui ne contient aucun rig ou animation runtime.
+
+Les cibles et positions de déplacement sont validées dans le Terrain Water via
+`SurvivalService`. Les coups joueurs réutilisent `WildlifeHitRequest`, les
+outils actifs Axe/Pickaxe et le feedback confirmé existants. La mort est unique,
+ne produit aucun loot et réactive le même modèle à sa HomePosition après le
+délai configuré. Aucun état Shark n'entre dans un DataStore ou snapshot monde.
+
 ### SurvivalService
 
 Responsable de :

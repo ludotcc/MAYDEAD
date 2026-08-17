@@ -1024,6 +1024,14 @@ L'océan doit rester dangereux.
 Les requins ou autres prédateurs marins peuvent attaquer les joueurs à
 proximité.
 
+Le **Shark** est un prédateur aquatique majeur, territorial et non persistant
+dynamiquement. Il patrouille autour de son pivot Studio initial, poursuit les
+joueurs réellement dans l'eau, inflige de lourds dégâts puis abandonne une
+cible invalide ou hors territoire avant de retourner à sa position d'origine.
+Très résistant mais tuable avec Axe ou Pickaxe, il ne fournit aucun poisson,
+aucune viande et aucun autre loot dans sa V1 afin de ne pas devenir une source
+de farm alimentaire.
+
 La **JellyFish** est une menace aquatique environnementale invulnérable.
 Elle poursuit le nageur valide le plus proche dans un territoire limité,
 inflige de faibles dégâts périodiques, abandonne les joueurs sortis de l'eau

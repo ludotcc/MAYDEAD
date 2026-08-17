@@ -826,13 +826,13 @@ excessivement complexe en V1.
 
 ## Tâches
 
--   [ ] zones océaniques ;
--   [ ] spawn requin ;
--   [ ] détection joueur ;
--   [ ] poursuite ;
--   [ ] attaque ;
--   [ ] abandon ;
--   [ ] performance ;
+-   [x] zones océaniques (validation Terrain Water existante) ;
+-   [x] enregistrement des Shark placés dans `Workspace.Animals` ;
+-   [x] détection des joueurs aquatiques ;
+-   [x] poursuite ;
+-   [x] attaque ;
+-   [x] abandon et retour Home ;
+-   [x] boucle centralisée et caches ;
 -   [ ] équilibrage.
 
 ------------------------------------------------------------------------
