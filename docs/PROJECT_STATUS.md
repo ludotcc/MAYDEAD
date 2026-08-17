@@ -2639,3 +2639,14 @@ Statut : `IMPLÉMENTÉ — À TESTER STUDIO`
 - Les dégâts existants restent inchangés : famine 0,35 PV/s (mort depuis 100 PV en environ 4 min 46 s) et déshydratation 0,5 PV/s (environ 3 min 20 s).
 - L'énergie reste inchangée : 0,005/s immobile, 0,065/s en mouvement, coût de récolte manuelle 0,75 et règles de fatigue/récupération existantes.
 - Aucun multiplicateur nocturne n'est ajouté. Aucun Remote, DataStore, `SchemaVersion`, format persistant, reset ou migration de jauge n'est introduit.
+
+## JELLYFISH — MENACE AQUATIQUE V1
+
+Statut : `À TESTER`
+
+- L'asset réel `Workspace.Animals.JellyFish` a été audité depuis son export local : modèle mono-`MeshPart` avec `PrimaryPart`, 15 Bones, `Humanoid`, `Animator`, deux sauvegardes `KeyframeSequence` et une animation runtime publiée `rbxassetid://10509287618` déjà jouée par son Script embarqué.
+- `WildlifeService` enregistre de façon idempotente toute `JellyFish` placée directement sous `Workspace.Animals`. `JellyfishAI` conserve le pivot Studio initial comme HomePosition et utilise le `Heartbeat` central existant pour le déplacement fluide du pivot, sans Pathfinding ni Remote.
+- Le serveur sélectionne toutes les 0,25 seconde le joueur admis, vivant, réellement en état `Swimming` dans du `Terrain Water` et le plus proche dans un rayon de 35 studs. La poursuite reste dans un leash de 55 studs, avance à 7 studs/s puis retourne à 5 studs/s.
+- À 5 studs, la menace applique 5 PV via `SurvivalService`, au maximum une fois toutes les 1,5 seconde par joueur. Terre, plage, pont et structure au-dessus de l'eau ne suffisent pas à rendre une cible valide.
+- La JellyFish est explicitement exclue des animaux chassables, marquée `Invulnerable`, protégée contre la mort de son `Humanoid`, sans loot, récompense, respawn aléatoire ni persistance dynamique.
+- Aucun DataStore, schéma, snapshot monde, inventaire, YearsOnIsland, SessionLock, contrôle joueur ou Remote n'est modifié. La matrice Studio solo/multijoueur, animation et rig reste à exécuter.

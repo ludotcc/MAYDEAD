@@ -1024,6 +1024,13 @@ L'océan doit rester dangereux.
 Les requins ou autres prédateurs marins peuvent attaquer les joueurs à
 proximité.
 
+La **JellyFish** est une menace aquatique environnementale invulnérable.
+Elle poursuit le nageur valide le plus proche dans un territoire limité,
+inflige de faibles dégâts périodiques, abandonne les joueurs sortis de l'eau
+et retourne ensuite à sa zone d'origine. Elle ne fournit aucun loot et ne
+constitue pas une cible de farming. Son rôle est de limiter l'exploration
+aquatique sans préparation.
+
 ------------------------------------------------------------------------
 
 ## 38. COMBAT

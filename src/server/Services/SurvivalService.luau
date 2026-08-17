@@ -28,6 +28,34 @@ local function clamp(value, minValue, maxValue)
 	return math.max(minValue, math.min(maxValue, value))
 end
 
+local function getTerrainWaterSurface(position)
+	local resolution = 4
+	local voxelCorner = Vector3.new(
+		math.floor(position.X / resolution) * resolution,
+		math.floor(position.Y / resolution) * resolution,
+		math.floor(position.Z / resolution) * resolution
+	)
+	local region = Region3.new(voxelCorner, voxelCorner + Vector3.new(resolution, resolution, resolution))
+	local waterOccupancy = 0
+	local channelReadSucceeded, channels = pcall(function()
+		return workspace.Terrain:ReadVoxelChannels(region, resolution, {"LiquidOccupancy"})
+	end)
+
+	if channelReadSucceeded and channels and channels.LiquidOccupancy then
+		waterOccupancy = channels.LiquidOccupancy[1][1][1]
+	else
+		local materials, occupancy = workspace.Terrain:ReadVoxels(region, resolution)
+		if materials[1][1][1] == Enum.Material.Water then
+			waterOccupancy = occupancy[1][1][1]
+		end
+	end
+
+	if waterOccupancy <= 0 then
+		return nil
+	end
+	return voxelCorner.Y + (waterOccupancy * resolution)
+end
+
 function SurvivalService.new()
 	local self = setmetatable({}, SurvivalService)
 	self.PlayerStates = {}
@@ -219,34 +247,48 @@ function SurvivalService:_isHeadUnderwater(character)
 		return false
 	end
 
-	local resolution = 4
 	local position = head.Position
-	local voxelCorner = Vector3.new(
-		math.floor(position.X / resolution) * resolution,
-		math.floor(position.Y / resolution) * resolution,
-		math.floor(position.Z / resolution) * resolution
-	)
-	local region = Region3.new(voxelCorner, voxelCorner + Vector3.new(resolution, resolution, resolution))
-	local waterOccupancy = 0
-	local channelReadSucceeded, channels = pcall(function()
-		return workspace.Terrain:ReadVoxelChannels(region, resolution, {"LiquidOccupancy"})
-	end)
+	local waterSurfaceY = getTerrainWaterSurface(position)
+	return waterSurfaceY ~= nil and position.Y < waterSurfaceY
+end
 
-	if channelReadSucceeded and channels and channels.LiquidOccupancy then
-		waterOccupancy = channels.LiquidOccupancy[1][1][1]
-	else
-		local materials, occupancy = workspace.Terrain:ReadVoxels(region, resolution)
-		if materials[1][1][1] == Enum.Material.Water then
-			waterOccupancy = occupancy[1][1][1]
-		end
-	end
+function SurvivalService:IsPointInTerrainWater(position)
+	return typeof(position) == "Vector3" and getTerrainWaterSurface(position) ~= nil
+end
 
-	if waterOccupancy <= 0 then
+function SurvivalService:IsPlayerAquatic(player)
+	local state = self.PlayerStates[player]
+	local character = player.Character
+	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+	local root = character and character:FindFirstChild("HumanoidRootPart")
+	return state ~= nil
+		and state.IsAlive
+		and humanoid ~= nil
+		and humanoid.Health > 0
+		and root ~= nil
+		and root:IsA("BasePart")
+		and humanoid:GetState() == Enum.HumanoidStateType.Swimming
+		and getTerrainWaterSurface(root.Position) ~= nil
+end
+
+function SurvivalService:DamagePlayer(player, amount)
+	if typeof(amount) ~= "number" or amount <= 0 then
 		return false
 	end
-
-	local waterSurfaceY = voxelCorner.Y + (waterOccupancy * resolution)
-	return position.Y < waterSurfaceY
+	local state = self.PlayerStates[player]
+	local character = player.Character
+	local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+	if not state or not state.IsAlive or not humanoid or humanoid.Health <= 0 then
+		return false
+	end
+	state.Health = clamp(math.min(state.Health, humanoid.Health) - amount, 0, humanoid.MaxHealth)
+	humanoid.Health = state.Health
+	if state.Health <= 0 then
+		state.IsAlive = false
+		self:_applyDeath(player)
+	end
+	self:_syncPlayer(player)
+	return true
 end
 
 function SurvivalService:SetThirst(player, value)

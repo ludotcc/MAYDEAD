@@ -375,6 +375,19 @@ Responsable de :
 -   récolte ;
 -   respawn des ressources.
 
+### WildlifeService
+
+Responsable des animaux et menaces environnementales serveur. La JellyFish
+placée sous `Workspace.Animals` est enregistrée sans clone ni spawn aléatoire.
+`JellyfishAI` conserve son pivot initial comme position d'origine, sélectionne
+le joueur aquatique valide le plus proche et pilote poursuite, leash, retour
+et cooldown de dégâts depuis le `Heartbeat` central de `WildlifeService`.
+
+La validation aquatique et les dégâts réutilisent `SurvivalService`. La
+JellyFish reste exclue des définitions d'animaux chassables, porte les attributs
+runtime `JellyfishHazard` et `Invulnerable`, ne produit aucun loot et n'entre
+dans aucun snapshot de monde.
+
 ### SurvivalService
 
 Responsable de :

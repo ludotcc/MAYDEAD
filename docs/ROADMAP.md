@@ -762,6 +762,15 @@ Aucun dégât entre joueurs via cette mécanique.
 
 **Priorité : P1**
 
+## Menace aquatique JellyFish
+
+Statut : `À TESTER`
+
+-   [x] audit de l'asset réel exporté et réutilisation de son animation publiée ;
+-   [x] IA aquatique autoritaire, cible la plus proche, leash et retour ;
+-   [x] dégâts faibles avec cooldown et invulnérabilité sans loot ;
+-   [ ] validation Studio solo, multijoueur, rig et animation.
+
 ## Tâches
 
 -   [ ] architecture IA ;

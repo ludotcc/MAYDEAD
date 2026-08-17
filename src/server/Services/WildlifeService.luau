@@ -2,12 +2,16 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 local TextService = game:GetService("TextService")
+local RunService = game:GetService("RunService")
 
 local SharedFolder = ReplicatedStorage:WaitForChild("Shared")
 local WildlifeDefinitions = require(SharedFolder:WaitForChild("Definitions"):WaitForChild("WildlifeDefinitions"))
 local CheetahConfig = require(SharedFolder:WaitForChild("Config"):WaitForChild("CheetahConfig"))
+local JellyfishConfig = require(SharedFolder:WaitForChild("Config"):WaitForChild("JellyfishConfig"))
 local InventoryService = require(script.Parent:WaitForChild("InventoryService"))
+local SurvivalService = require(script.Parent:WaitForChild("SurvivalService"))
 local CheetahAI = require(script.Parent:WaitForChild("CheetahAI"))
+local JellyfishAI = require(script.Parent:WaitForChild("JellyfishAI"))
 
 local WildlifeService = {}
 WildlifeService.__index = WildlifeService
@@ -109,6 +113,7 @@ function WildlifeService.new()
 	self._cheetahRespawnScheduled = false
 	self._lastCheetahSpawnPoint = nil
 	self._cheetahRandom = Random.new()
+	self._jellyfishAIs = setmetatable({}, {__mode = "k"})
 	self._tamingFeedback = Instance.new("RemoteEvent")
 	self._tamingFeedback.Name = "CheetahTamingFeedback"
 	self._tamingFeedback.Parent = ReplicatedStorage
@@ -170,6 +175,7 @@ function WildlifeService:_getAnimal(target)
 	local current = target
 	while current and current ~= workspace do
 		if current:IsA("Model") then
+			if current:GetAttribute("Invulnerable") == true then return nil, nil end
 			local animalType = current:GetAttribute("AnimalType")
 			if WildlifeDefinitions[animalType] and current:FindFirstChildOfClass("Humanoid") then
 				return current, animalType
@@ -178,6 +184,24 @@ function WildlifeService:_getAnimal(target)
 		current = current.Parent
 	end
 	return nil, nil
+end
+
+function WildlifeService:_registerJellyfish(model)
+	if not model:IsA("Model") or model.Name ~= JellyfishConfig.MODEL_NAME or self._jellyfishAIs[model] then
+		return
+	end
+	local ai = JellyfishAI.new(
+		model,
+		function(player) return SurvivalService:IsPlayerAquatic(player) end,
+		function(player, amount) return SurvivalService:DamagePlayer(player, amount) end,
+		function(position) return SurvivalService:IsPointInTerrainWater(position) end
+	)
+	if not ai then
+		warn("[MAYDEAD][JELLYFISH] Rejected model without a valid PrimaryPart: " .. model:GetFullName())
+		return
+	end
+	self._jellyfishAIs[model] = ai
+	print("[MAYDEAD][JELLYFISH] Registered aquatic hazard: " .. model:GetFullName())
 end
 
 function WildlifeService:_syncCheetahRuntimeAttributes(ai, spawnPoint)
@@ -713,6 +737,25 @@ function WildlifeService:_refreshCheetahSessionState()
 end
 
 function WildlifeService:Start()
+	local animalsFolder = workspace:FindFirstChild(JellyfishConfig.ANIMALS_FOLDER_NAME)
+	if animalsFolder then
+		for _, child in animalsFolder:GetChildren() do
+			self:_registerJellyfish(child)
+		end
+		animalsFolder.ChildAdded:Connect(function(child)
+			self:_registerJellyfish(child)
+		end)
+	else
+		warn("[MAYDEAD][JELLYFISH] Workspace.Animals folder not found")
+	end
+	RunService.Heartbeat:Connect(function(deltaTime)
+		for model, ai in self._jellyfishAIs do
+			if not ai:Step(deltaTime) then
+				self._jellyfishAIs[model] = nil
+			end
+		end
+	end)
+
 	local bisonSpawns = workspace:FindFirstChild("BisonSpawns")
 	if not bisonSpawns then
 		bisonSpawns = Instance.new("Folder")
@@ -770,6 +813,7 @@ function WildlifeService:Start()
 		for _, ai in self._cheetahAIs do
 			if ai.FollowTargetUserId == player.UserId then ai:SetCommand("Stay") end
 		end
+		for _, ai in self._jellyfishAIs do ai:RemovePlayer(player) end
 		task.defer(function() self:_refreshCheetahSessionState() end)
 	end)
 	Players.PlayerAdded:Connect(function(player)
