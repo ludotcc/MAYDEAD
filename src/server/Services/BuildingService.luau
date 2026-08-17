@@ -1581,7 +1581,7 @@ function BuildingService:_registerRuntimeStructure(model, itemId)
 	if itemId == "Camp" then
 		CampService:RegisterCamp(model)
 	end
-	if itemId == "CraftingTable" or itemId == "Campfire" or itemId == "Chest" or itemId == "AutomaticLoader" or itemId == "Smelt" then
+	if itemId == "CraftingTable" or itemId == "Campfire" or itemId == "Chest" or itemId == "Boat" or itemId == "AutomaticLoader" or itemId == "Smelt" then
 		StationService:RegisterStation(model, itemId)
 		if itemId == "CraftingTable" then
 			CollectionService:AddTag(model, WORKBENCH_TAG)
@@ -1615,8 +1615,8 @@ function BuildingService:_registerRuntimeStructure(model, itemId)
 			local prompt = Instance.new("ProximityPrompt")
 			prompt.Name = promptName
 			prompt:SetAttribute("MAYDEADStationInteraction", true)
-			prompt.ActionText = itemId == "CraftingTable" and "CRAFTER" or (itemId == "AutomaticLoader" and "OUVRIR" or (itemId == "Chest" and "OUVRIR" or "UTILISER"))
-			prompt.ObjectText = itemId == "CraftingTable" and "TABLE DE CRAFTING" or (itemId == "AutomaticLoader" and "CHARGEUR AUTOMATIQUE" or (itemId == "Chest" and "COFFRE" or (itemId == "Smelt" and "FOUR DE FONTE" or "FEU DE CAMP")))
+			prompt.ActionText = itemId == "CraftingTable" and "CRAFTER" or ((itemId == "AutomaticLoader" or itemId == "Chest" or itemId == "Boat") and "OUVRIR" or "UTILISER")
+			prompt.ObjectText = itemId == "CraftingTable" and "TABLE DE CRAFTING" or (itemId == "AutomaticLoader" and "CHARGEUR AUTOMATIQUE" or (itemId == "Chest" and "COFFRE" or (itemId == "Boat" and "BATEAU" or (itemId == "Smelt" and "FOUR DE FONTE" or "FEU DE CAMP"))))
 			prompt.KeyboardKeyCode = Enum.KeyCode.E
 			prompt.MaxActivationDistance = 10
 			prompt.RequiresLineOfSight = false
@@ -1956,6 +1956,16 @@ function BuildingService:_handleDismantleRequest(player, target)
 
 	local previousParent = structure.Parent
 	structure.Parent = nil
+	local discardedBoatCargo
+	if itemId == "Boat" then
+		discardedBoatCargo = StationService:DiscardBoatCargo(structure)
+		if not discardedBoatCargo then
+			structure.Parent = previousParent
+			self._dismantleHits[structure] = damage
+			self:_rejectDismantle(player, structure, "CargoUnavailable", "Boat cargo runtime unavailable")
+			return
+		end
+	end
 	local inventoryCommitted
 	if factoryRefund then
 		inventoryCommitted = InventoryService:CommitSimulatedItems(player, inventorySimulation)
@@ -1964,6 +1974,7 @@ function BuildingService:_handleDismantleRequest(player, target)
 		inventoryCommitted = returned.Remaining == 0
 	end
 	if not inventoryCommitted then
+		if discardedBoatCargo then StationService:RestoreDiscardedBoatCargo(structure, discardedBoatCargo) end
 		structure.Parent = previousParent
 		self._dismantleHits[structure] = damage
 		self:_rejectDismantle(player, structure, "InventoryFull", "inventory full")
@@ -2002,7 +2013,8 @@ function BuildingService:GetPersistentSnapshot()
 		local structureId = candidate:GetAttribute("StructureId")
 		local itemId = candidate:GetAttribute("ItemId")
 		local ownerUserId = candidate:GetAttribute("OwnerUserId")
-		local pivot = serializeCFrame(candidate:GetPivot())
+		local currentPivot = itemId == "Boat" and BoatService:GetPersistentPivot(candidate) or candidate:GetPivot()
+		local pivot = currentPivot and serializeCFrame(currentPivot) or nil
 		if not isValidStructureId(structureId)
 			or seenIds[structureId]
 			or typeof(itemId) ~= "string"
@@ -2029,7 +2041,7 @@ function BuildingService:GetPersistentSnapshot()
 			end
 		end
 		local state
-		if itemId == "Chest" or itemId == "CraftingTable" or itemId == "AutomaticLoader" or itemId == "Campfire" or itemId == "Smelt" then
+		if itemId == "Chest" or itemId == "Boat" or itemId == "CraftingTable" or itemId == "AutomaticLoader" or itemId == "Campfire" or itemId == "Smelt" then
 			local stateError
 			state, stateError = StationService:GetPersistentState(candidate)
 			if not state then
@@ -2233,7 +2245,7 @@ function BuildingService:RestorePersistentSnapshot(snapshot, structuresVersion)
 	local structuresFailed = 0
 	for _, record in records do
 		local state = record.State
-		local requiresState = structuresVersion == STRUCTURES_VERSION
+		local requiresState = structuresVersion == STRUCTURES_VERSION and record.ItemId ~= "Boat"
 			and (record.ItemId == "Chest" or record.ItemId == "CraftingTable" or record.ItemId == "AutomaticLoader"
 				or record.ItemId == "Campfire" or record.ItemId == "Smelt" or record.ItemId == "GardenPlot")
 		if state == nil then
@@ -2244,7 +2256,7 @@ function BuildingService:RestorePersistentSnapshot(snapshot, structuresVersion)
 			continue
 		end
 		local restored, stateError, restoreInfo
-		if record.ItemId == "Chest" or record.ItemId == "CraftingTable" or record.ItemId == "AutomaticLoader" or record.ItemId == "Campfire" or record.ItemId == "Smelt" then
+		if record.ItemId == "Chest" or record.ItemId == "Boat" or record.ItemId == "CraftingTable" or record.ItemId == "AutomaticLoader" or record.ItemId == "Campfire" or record.ItemId == "Smelt" then
 			restored, stateError, restoreInfo = StationService:RestorePersistentState(record.Model, state)
 		elseif record.ItemId == "GardenPlot" then
 			restored, stateError = CropService:RestorePersistentState(record.Model, state)

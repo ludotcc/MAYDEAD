@@ -516,6 +516,8 @@ function controller:_canDeposit(itemId)
 		return definition ~= nil and definition.Category == "Resource", "Storage"
 	elseif self.State.StationType == "Chest" then
 		return ItemDefinitions[itemId] ~= nil, "Storage"
+	elseif self.State.StationType == "Boat" then
+		return ItemDefinitions[itemId] ~= nil, "Storage"
 	elseif self.State.StationType == "AutomaticLoader" then
 		return itemId == "MetalWaste" or itemId == "PlasticWaste" or itemId == "WasteBag", "Storage"
 	elseif self.State.StationType == "Factory" then
@@ -613,22 +615,23 @@ function controller:_render()
 		Area = "Player",
 	}}
 	self:_renderPlayerInventory()
-	if self.State.StationType == "CraftingTable" or self.State.StationType == "Chest" or self.State.StationType == "AutomaticLoader" or self.State.StationType == "Factory" then
+	if self.State.StationType == "CraftingTable" or self.State.StationType == "Chest" or self.State.StationType == "Boat" or self.State.StationType == "AutomaticLoader" or self.State.StationType == "Factory" then
 		local isChest = self.State.StationType == "Chest"
+		local isBoat = self.State.StationType == "Boat"
 		local isLoader = self.State.StationType == "AutomaticLoader"
 		local isFactory = self.State.StationType == "Factory"
-		self.StationTitle.Text = isFactory and "FACTORY" or (isLoader and "CHARGEUR AUTOMATIQUE" or (isChest and "COFFRE" or "TABLE DE CRAFT"))
-		self.PrimaryTitle.Text = isFactory and "ASSEMBLAGE NAVAL SEAPLANE" or ((isChest or isLoader) and "STOCKAGE  •  30 SLOTS" or "RESSOURCES  •  12 SLOTS")
+		self.StationTitle.Text = isFactory and "FACTORY" or (isLoader and "CHARGEUR AUTOMATIQUE" or (isChest and "COFFRE" or (isBoat and "BATEAU" or "TABLE DE CRAFT")))
+		self.PrimaryTitle.Text = isFactory and "ASSEMBLAGE NAVAL SEAPLANE" or (isBoat and "CARGO  •  40 SLOTS" or ((isChest or isLoader) and "STOCKAGE  •  30 SLOTS" or "RESSOURCES  •  12 SLOTS"))
 		local finalState = self.FinalFactoryState
 		self.Status.Text = isFactory and string.format(
 			"MÉTAL %d / 40  •  PLASTIQUE %d / 30  •  PROGRESSION %d%%",
 			finalState and finalState.MetalPanelStack or 0,
 			finalState and finalState.PlasticPanelStack or 0,
 			math.floor(((finalState and finalState.Progress) or 0) * 100 + 0.5)
-		) or (isLoader and "DÉCHETS UNIQUEMENT" or (isChest and "COFFRE  •  30 SLOTS" or "STOCK TABLE  •  12 SLOTS"))
+		) or (isLoader and "DÉCHETS UNIQUEMENT" or (isChest and "COFFRE  •  30 SLOTS" or (isBoat and "CARGO  •  40 SLOTS" or "STOCK TABLE  •  12 SLOTS")))
 		self.PrimaryArea.Size = isFactory and UDim2.new(0.48, 0, 0, 112) or UDim2.new(0.48, 0, 1, -90)
 		self.PrimaryArea.Position = UDim2.new(0.52, 0, 0, isFactory and 170 or 70)
-		self:_renderStationArea(self.PrimaryArea, isFactory and "INVENTAIRE FACTORY" or (isLoader and "ENTRÉE CHARGEUR" or (isChest and "COFFRE" or "INVENTAIRE TABLE")), "Storage", self.State.Slots)
+		self:_renderStationArea(self.PrimaryArea, isFactory and "INVENTAIRE FACTORY" or (isLoader and "ENTRÉE CHARGEUR" or (isChest and "COFFRE" or (isBoat and "CARGO" or "INVENTAIRE TABLE"))), "Storage", self.State.Slots)
 		self.SecondaryArea.Visible = false
 		self.SecondaryTitle.Visible = false
 		self.TertiaryArea.Visible = false
@@ -971,7 +974,7 @@ function controller:Start()
 		self.State = state
 		self.TabButton.Visible = true
 		InventoryController:SetOpen(true)
-		if state.StationType == "Campfire" or state.StationType == "Chest" or state.StationType == "Smelt" or state.StationType == "Factory" then
+		if state.StationType == "Campfire" or state.StationType == "Chest" or state.StationType == "Boat" or state.StationType == "Smelt" or state.StationType == "Factory" then
 			self:_showStation()
 		end
 		if state.StationType == "Factory" and RunService:IsStudio() then

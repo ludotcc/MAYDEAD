@@ -31,6 +31,7 @@ type BoatState = {
 	PendingSurfaceMode: SurfaceMode?,
 	PendingSurfaceElapsed: number,
 	WaterSamples: number,
+	PivotToBody: CFrame,
 	OccupantConnection: RBXScriptConnection?,
 }
 
@@ -264,6 +265,9 @@ local function registerBoat(model: Model): BoatState?
 	end
 
 	disableLegacyPropulsionScript(seat)
+	local pivotToBody = model:GetPivot():ToObjectSpace(body.CFrame)
+	body.AssemblyLinearVelocity = Vector3.zero
+	body.AssemblyAngularVelocity = Vector3.zero
 	bodyForce.Force = Vector3.zero
 	angularVelocity.AngularVelocity = Vector3.zero
 	local templateTurnMaxTorque = angularVelocity.MaxTorque
@@ -298,6 +302,7 @@ local function registerBoat(model: Model): BoatState?
 		PendingSurfaceMode = nil,
 		PendingSurfaceElapsed = 0,
 		WaterSamples = initialWaterSamples,
+		PivotToBody = pivotToBody,
 		OccupantConnection = nil,
 	}
 	boatStates[model] = state
@@ -340,6 +345,12 @@ function BoatService:UnregisterBoat(model)
 		state.OccupantConnection:Disconnect()
 	end
 	boatStates[model] = nil
+end
+
+function BoatService:GetPersistentPivot(model)
+	local state = boatStates[model]
+	if not state or not state.Body.Parent then return nil end
+	return state.Body.CFrame * state.PivotToBody:Inverse()
 end
 
 local function updateBoat(state: BoatState, deltaTime: number)

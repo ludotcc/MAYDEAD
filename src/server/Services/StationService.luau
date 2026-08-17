@@ -120,6 +120,7 @@ end
 local function getStationSlotCount(stationType)
 	if stationType == "Factory" then return StationConfig.FINAL_FACTORY_SLOTS end
 	if stationType == "Chest" then return StationConfig.CHEST_SLOTS end
+	if stationType == "Boat" then return StationConfig.BOAT_CARGO_SLOTS end
 	if stationType == "AutomaticLoader" then return StationConfig.AUTOMATIC_LOADER_SLOTS end
 	if stationType == "CraftingTable" then return StationConfig.CRAFTING_TABLE_SLOTS end
 	return nil
@@ -306,7 +307,7 @@ function StationService:_buildClientState(data)
 		state.Status = data.Status or "ÉTEINT"
 		return state
 	end
-	if data.Type == "CraftingTable" or data.Type == "Chest" or data.Type == "AutomaticLoader" or data.Type == "Factory" then
+	if data.Type == "CraftingTable" or data.Type == "Chest" or data.Type == "Boat" or data.Type == "AutomaticLoader" or data.Type == "Factory" then
 		state.Slots = cloneSlots(data.Slots)
 	else
 		state.FuelSlots = cloneSlots(data.FuelSlots)
@@ -365,8 +366,9 @@ function StationService:RegisterStation(station, stationType)
 		BurnRemaining = 0,
 		CookProgress = 0,
 	}
-	if stationType == "CraftingTable" or stationType == "Chest" or stationType == "AutomaticLoader" or stationType == "Factory" then
+	if stationType == "CraftingTable" or stationType == "Chest" or stationType == "Boat" or stationType == "AutomaticLoader" or stationType == "Factory" then
 		local slotCount = stationType == "Chest" and StationConfig.CHEST_SLOTS
+			or stationType == "Boat" and StationConfig.BOAT_CARGO_SLOTS
 			or stationType == "AutomaticLoader" and StationConfig.AUTOMATIC_LOADER_SLOTS
 			or stationType == "Factory" and StationConfig.FINAL_FACTORY_SLOTS
 			or StationConfig.CRAFTING_TABLE_SLOTS
@@ -409,6 +411,7 @@ function StationService:CanDismantle(station)
 	if not data then
 		return true
 	end
+	if data.Type == "Boat" then return true end
 	local function hasItems(slots)
 		for _, slot in slots or {} do
 			if slot.ItemId ~= nil and slot.Quantity > 0 then
@@ -439,12 +442,30 @@ function StationService:UnregisterStation(station)
 	self._viewers[station] = nil
 end
 
+function StationService:DiscardBoatCargo(station)
+	local data = self._stations[station]
+	if not data or data.Type ~= "Boat" then return nil, "BoatCargoNotRegistered" end
+	local previousSlots = cloneSlots(data.Slots)
+	data.Slots = createSlots(StationConfig.BOAT_CARGO_SLOTS)
+	self:_syncStation(station)
+	return previousSlots
+end
+
+function StationService:RestoreDiscardedBoatCargo(station, slots)
+	local data = self._stations[station]
+	local validated = data and data.Type == "Boat" and validateSlots(slots, StationConfig.BOAT_CARGO_SLOTS) or nil
+	if not validated then return false end
+	data.Slots = validated
+	self:_syncStation(station)
+	return true
+end
+
 function StationService:GetPersistentState(station)
 	local data = self._stations[station]
 	if not data then
 		return nil, "StationNotRegistered"
 	end
-	if data.Type == "Chest" or data.Type == "CraftingTable" or data.Type == "AutomaticLoader" or data.Type == "Factory" then
+	if data.Type == "Chest" or data.Type == "Boat" or data.Type == "CraftingTable" or data.Type == "AutomaticLoader" or data.Type == "Factory" then
 		return {
 			StateVersion = 1,
 			StationType = data.Type,
@@ -479,7 +500,7 @@ function StationService:RestorePersistentState(station, state)
 	local supportedVersion = stateVersion == 1
 		or (data.Type == "Campfire" and stateVersion == CAMPFIRE_STATE_VERSION)
 	if not supportedVersion then return false, "InvalidStationState" end
-	if data.Type == "Chest" or data.Type == "CraftingTable" or data.Type == "AutomaticLoader" or data.Type == "Factory" then
+	if data.Type == "Chest" or data.Type == "Boat" or data.Type == "CraftingTable" or data.Type == "AutomaticLoader" or data.Type == "Factory" then
 		local inventory = state.Inventory
 		local slots = typeof(inventory) == "table" and (data.Type == "Factory"
 			and validateFactorySlots(inventory.Slots)
@@ -583,7 +604,7 @@ function StationService:RestorePersistentState(station, state)
 end
 
 function StationService:_getDestination(data, area)
-	if (data.Type == "CraftingTable" or data.Type == "Chest" or data.Type == "AutomaticLoader" or data.Type == "Factory") and area == "Storage" then
+	if (data.Type == "CraftingTable" or data.Type == "Chest" or data.Type == "Boat" or data.Type == "AutomaticLoader" or data.Type == "Factory") and area == "Storage" then
 		return data.Slots
 	elseif data.Type == "Campfire" and area == "Fuel" then
 		return data.FuelSlots
@@ -601,6 +622,8 @@ function StationService:_canDeposit(data, area, itemId)
 		local definition = ItemDefinitions[itemId]
 		return area == "Storage" and definition ~= nil and definition.Category == "Resource"
 	elseif data.Type == "Chest" then
+		return area == "Storage" and ItemDefinitions[itemId] ~= nil
+	elseif data.Type == "Boat" then
 		return area == "Storage" and ItemDefinitions[itemId] ~= nil
 	elseif data.Type == "AutomaticLoader" then
 		return area == "Storage" and (itemId == "MetalWaste" or itemId == "PlasticWaste" or itemId == "WasteBag")
