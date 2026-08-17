@@ -112,9 +112,10 @@ function SharkAI:_refreshTarget()
 		local _, distance = self:_getTargetData(player)
 		if distance and distance <= closestDistance then closest, closestDistance = player, distance end
 	end
-	if self.Target and currentDistance and currentDistance <= SharkConfig.DETECTION_RADIUS
-		and closest ~= self.Target and closestDistance + SharkConfig.TARGET_SWITCH_ADVANTAGE >= currentDistance
-	then return end
+	if self.Target and currentDistance then
+		if not closest then return end
+		if closest ~= self.Target and closestDistance + SharkConfig.TARGET_SWITCH_ADVANTAGE >= currentDistance then return end
+	end
 	self.Target = closest
 end
 
